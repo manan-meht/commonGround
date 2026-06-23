@@ -74,13 +74,14 @@ export async function POST(req: NextRequest) {
     })
     if (insertError) console.error('[intake/message] insert error:', JSON.stringify(insertError))
 
-    // Get case info for AI context
-    const { data: caseRow } = await db
+    console.error('[intake/message] step: query case')
+    const { data: caseRow, error: caseError } = await db
       .from('cases')
       .select('topic, initiator_name, recipient_name')
       .eq('id', caseId)
       .single()
 
+    if (caseError) console.error('[intake/message] case error:', JSON.stringify(caseError))
     if (!caseRow) {
       return NextResponse.json({ error: 'Case not found.' }, { status: 404 })
     }
@@ -90,15 +91,15 @@ export async function POST(req: NextRequest) {
     const participantName =
       role === 'initiator' ? caseRow.initiator_name : caseRow.recipient_name
 
-    // Call AI
+    console.error('[intake/message] step: call OpenAI')
     const aiResponse = await continueIntake(
       { participantName, role, topic: caseRow.topic, otherPartyName },
       [...history, { role: 'user', content }]
     )
 
-    // Store the AI response
+    console.error('[intake/message] step: insert AI response')
     const aiEncrypted = encryptToDb(aiResponse)
-    await db.from('intake_messages').insert({
+    const { error: aiInsertError } = await db.from('intake_messages').insert({
       case_id: caseId,
       participant_id: participantId,
       role: 'assistant',
@@ -107,6 +108,7 @@ export async function POST(req: NextRequest) {
       encryption_tag: aiEncrypted.encryption_tag,
       sequence_number: nextSequence + 1,
     })
+    if (aiInsertError) console.error('[intake/message] ai insert error:', JSON.stringify(aiInsertError))
 
     return NextResponse.json({ message: aiResponse })
   } catch (err) {
