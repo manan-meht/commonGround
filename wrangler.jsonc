@@ -12,5 +12,13 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://ffiientybnukjrkizixf.supabase.co",
+    "SUPABASE_URL": "https://ffiientybnukjrkizixf.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_AdXDDLdiOpXAP-038mWfHg_51KIPd-L",
+    "NEXT_PUBLIC_APP_URL": "https://commonground.mandarth-manan.workers.dev",
+    "OPENAI_MODEL": "gpt-4o",
+    "DEMO_MODE": "false"
   }
 }
