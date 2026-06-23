@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
   const { participantId, caseId, role } = session
 
   try {
-    console.log('[intake/message] step: getServiceClient')
+    console.error('[intake/message] step: getServiceClient, SUPABASE_URL=', process.env['SUPABASE_URL'], 'HAS_KEY=', !!process.env['SUPABASE_SERVICE_ROLE_KEY'])
     const db = getServiceClient()
 
-    console.log('[intake/message] step: query participant')
+    console.error('[intake/message] step: query participant')
     const { data: participant, error: participantError } = await db
       .from('participants')
       .select('intake_completed_at')
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Your intake has already been completed.' }, { status: 409 })
     }
 
-    console.log('[intake/message] step: query history')
+    console.error('[intake/message] step: query history')
     const { data: existingMessages, error: historyError } = await db
       .from('intake_messages')
       .select('*')
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const nextSequence = (existingMessages?.length ?? 0) + 1
 
-    console.log('[intake/message] step: encrypt and insert message')
+    console.error('[intake/message] step: encrypt and insert message')
     const encrypted = encryptToDb(content)
     await db.from('intake_messages').insert({
       case_id: caseId,
