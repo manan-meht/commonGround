@@ -4,17 +4,6 @@
  * Never import this file from client components.
  */
 
-function getVar(name: string): string | undefined {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require('@opennextjs/cloudflare')
-    const ctx = getCloudflareContext() as { env: Record<string, string | undefined> }
-    return ctx.env[name] ?? process.env[name]
-  } catch {
-    return process.env[name]
-  }
-}
-
 export interface EnvConfig {
   NEXT_PUBLIC_APP_URL: string
   NEXT_PUBLIC_SUPABASE_URL: string
@@ -44,17 +33,17 @@ const REQUIRED_VARS = [
 ] as const
 
 export function validateEnv(): void {
-  const demoMode = getVar('DEMO_MODE') === 'true'
+  const demoMode = process.env['DEMO_MODE'] === 'true'
 
   const missing: string[] = []
 
   for (const key of REQUIRED_VARS) {
-    if (!getVar(key)) {
+    if (!process.env[key]) {
       missing.push(key)
     }
   }
 
-  if (!demoMode && !getVar('OPENAI_API_KEY')) {
+  if (!demoMode && !process.env['OPENAI_API_KEY']) {
     missing.push('OPENAI_API_KEY')
   }
 
@@ -67,7 +56,7 @@ export function validateEnv(): void {
     }
   }
 
-  const encKey = getVar('SUBMISSION_ENCRYPTION_KEY')
+  const encKey = process.env['SUBMISSION_ENCRYPTION_KEY']
   if (encKey && !/^[0-9a-f]{64}$/i.test(encKey)) {
     throw new Error('SUBMISSION_ENCRYPTION_KEY must be a 64-character hex string (32 bytes).')
   }
@@ -75,20 +64,20 @@ export function validateEnv(): void {
 
 export function getEnv(): EnvConfig {
   return {
-    NEXT_PUBLIC_APP_URL: getVar('NEXT_PUBLIC_APP_URL') ?? 'http://localhost:3000',
-    NEXT_PUBLIC_SUPABASE_URL: getVar('NEXT_PUBLIC_SUPABASE_URL') ?? '',
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: getVar('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '',
-    SUPABASE_SERVICE_ROLE_KEY: getVar('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    OPENAI_API_KEY: getVar('OPENAI_API_KEY') ?? '',
-    OPENAI_MODEL: getVar('OPENAI_MODEL') ?? 'gpt-4o',
-    SUBMISSION_ENCRYPTION_KEY: getVar('SUBMISSION_ENCRYPTION_KEY') ?? '',
-    SESSION_SECRET: getVar('SESSION_SECRET') ?? '',
-    CRON_SECRET: getVar('CRON_SECRET') ?? '',
-    DEMO_MODE: getVar('DEMO_MODE') === 'true',
-    WHATSAPP_ACCESS_TOKEN: getVar('WHATSAPP_ACCESS_TOKEN'),
-    WHATSAPP_PHONE_NUMBER_ID: getVar('WHATSAPP_PHONE_NUMBER_ID'),
-    WHATSAPP_API_VERSION: getVar('WHATSAPP_API_VERSION') ?? 'v21.0',
-    RESEND_API_KEY: getVar('RESEND_API_KEY'),
-    EMAIL_FROM: getVar('EMAIL_FROM'),
+    NEXT_PUBLIC_APP_URL: process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000',
+    NEXT_PUBLIC_SUPABASE_URL: process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ?? '',
+    SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '',
+    OPENAI_API_KEY: process.env['OPENAI_API_KEY'] ?? '',
+    OPENAI_MODEL: process.env['OPENAI_MODEL'] ?? 'gpt-4o',
+    SUBMISSION_ENCRYPTION_KEY: process.env['SUBMISSION_ENCRYPTION_KEY'] ?? '',
+    SESSION_SECRET: process.env['SESSION_SECRET'] ?? '',
+    CRON_SECRET: process.env['CRON_SECRET'] ?? '',
+    DEMO_MODE: process.env['DEMO_MODE'] === 'true',
+    WHATSAPP_ACCESS_TOKEN: process.env['WHATSAPP_ACCESS_TOKEN'],
+    WHATSAPP_PHONE_NUMBER_ID: process.env['WHATSAPP_PHONE_NUMBER_ID'],
+    WHATSAPP_API_VERSION: process.env['WHATSAPP_API_VERSION'] ?? 'v21.0',
+    RESEND_API_KEY: process.env['RESEND_API_KEY'],
+    EMAIL_FROM: process.env['EMAIL_FROM'],
   }
 }
