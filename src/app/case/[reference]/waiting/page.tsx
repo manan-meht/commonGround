@@ -43,19 +43,12 @@ export default async function WaitingPage({ params }: PageProps) {
     .eq('case_id', session.caseId)
     .not('intake_completed_at', 'is', null)
 
-  // Build invite link — we need to find the invite token
-  // For the waiting page, if this is the initiator we show the share link
-  // We reconstruct the link from the case reference (token not stored plaintext)
-  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
-
-  // The invite link is shown to the initiator; we can't reconstruct the token but
-  // we can build the WhatsApp message pointing to a token lookup
-  // For demo: derive from a stored URL or show a placeholder
-  // In production, the token was returned at case creation time
-  const inviteLink = `${appUrl}/invite/[your-invite-link]`
+  const inviteLink = session.inviteToken
+    ? `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://commonground.mandarth-manan.workers.dev'}/invite/${session.inviteToken}`
+    : undefined
 
   const whatsAppUrl =
-    session.role === 'initiator'
+    session.role === 'initiator' && inviteLink
       ? buildWhatsAppShareUrl({
           recipientPhone: caseRow.recipient_phone,
           initiatorName: caseRow.initiator_name,
@@ -76,8 +69,7 @@ export default async function WaitingPage({ params }: PageProps) {
         recipientName={caseRow.recipient_name}
         completedCount={count ?? 0}
         whatsAppUrl={whatsAppUrl}
-        recipientPhone={caseRow.recipient_phone}
-        initiatorName={caseRow.initiator_name}
+        inviteLink={inviteLink}
       />
       <SiteFooter />
     </div>

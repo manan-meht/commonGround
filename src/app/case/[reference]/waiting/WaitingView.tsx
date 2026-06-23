@@ -12,8 +12,7 @@ interface Props {
   recipientName: string
   completedCount: number
   whatsAppUrl?: string
-  recipientPhone?: string
-  initiatorName?: string
+  inviteLink?: string
 }
 
 export function WaitingView({
@@ -24,28 +23,21 @@ export function WaitingView({
   role,
   recipientName,
   completedCount: initialCount,
-  whatsAppUrl: whatsAppUrlProp,
-  recipientPhone,
-  initiatorName,
+  whatsAppUrl,
+  inviteLink: inviteLinkProp,
 }: Props) {
   const router = useRouter()
   const [currentStatus, setCurrentStatus] = useState(status)
   const [completedCount, setCompletedCount] = useState(initialCount)
   const [copied, setCopied] = useState(false)
-  const [inviteLink, setInviteLink] = useState<string>('')
-  const [whatsAppUrl, setWhatsAppUrl] = useState<string | undefined>(whatsAppUrlProp)
+  const [inviteLink, setInviteLink] = useState<string>(inviteLinkProp ?? '')
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('cg_invite_link')
-    if (stored) {
-      setInviteLink(stored)
-      if (role === 'initiator' && recipientPhone && initiatorName) {
-        const phone = recipientPhone.replace(/\D/g, '')
-        const msg = encodeURIComponent(`Hi, ${initiatorName} has invited you to Common Ground to work through "${topic}" together. Join here: ${stored}`)
-        setWhatsAppUrl(`https://wa.me/${phone}?text=${msg}`)
-      }
+    if (!inviteLinkProp) {
+      const stored = sessionStorage.getItem('cg_invite_link')
+      if (stored) setInviteLink(stored)
     }
-  }, [role, recipientPhone, initiatorName, topic])
+  }, [inviteLinkProp])
 
   // Poll for status updates
   useEffect(() => {
@@ -70,7 +62,8 @@ export function WaitingView({
   }, [caseId, caseReference, router])
 
   async function copyLink() {
-    await navigator.clipboard.writeText(inviteLink || window.location.href)
+    const link = inviteLink || window.location.href
+    await navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
@@ -133,7 +126,7 @@ export function WaitingView({
       </section>
 
       {/* Share section (initiator only) */}
-      {role === 'initiator' && inviteLink && (
+      {role === 'initiator' && (whatsAppUrl || inviteLink) && (
         <div className="w-full space-y-4 mb-stack-md">
           <p className="font-label-sm text-outline uppercase tracking-widest">Share the invitation</p>
           <a
