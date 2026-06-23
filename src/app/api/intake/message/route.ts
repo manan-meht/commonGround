@@ -91,11 +91,18 @@ export async function POST(req: NextRequest) {
     const participantName =
       role === 'initiator' ? caseRow.initiator_name : caseRow.recipient_name
 
-    console.error('[intake/message] step: call OpenAI')
-    const aiResponse = await continueIntake(
-      { participantName, role, topic: caseRow.topic, otherPartyName },
-      [...history, { role: 'user', content }]
-    )
+    console.error('[intake/message] step: call OpenAI, key present=', !!process.env['OPENAI_API_KEY'])
+    let aiResponse: string
+    try {
+      aiResponse = await continueIntake(
+        { participantName, role, topic: caseRow.topic, otherPartyName },
+        [...history, { role: 'user', content }]
+      )
+    } catch (openaiErr) {
+      const e = openaiErr as Error & { status?: number; code?: string; type?: string }
+      console.error('[intake/message] OpenAI error:', e.message, 'status=', e.status, 'code=', e.code, 'type=', e.type)
+      throw openaiErr
+    }
 
     console.error('[intake/message] step: insert AI response')
     const aiEncrypted = encryptToDb(aiResponse)
