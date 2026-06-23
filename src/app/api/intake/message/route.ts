@@ -29,25 +29,30 @@ export async function POST(req: NextRequest) {
   const { participantId, caseId, role } = session
 
   try {
+    console.log('[intake/message] step: getServiceClient')
     const db = getServiceClient()
 
-    // Verify participant intake is not yet complete
-    const { data: participant } = await db
+    console.log('[intake/message] step: query participant')
+    const { data: participant, error: participantError } = await db
       .from('participants')
       .select('intake_completed_at')
       .eq('id', participantId)
       .single()
 
+    if (participantError) console.error('[intake/message] participant error:', participantError)
+
     if (participant?.intake_completed_at) {
       return NextResponse.json({ error: 'Your intake has already been completed.' }, { status: 409 })
     }
 
-    // Get existing history
-    const { data: existingMessages } = await db
+    console.log('[intake/message] step: query history')
+    const { data: existingMessages, error: historyError } = await db
       .from('intake_messages')
       .select('*')
       .eq('participant_id', participantId)
       .order('sequence_number', { ascending: true })
+
+    if (historyError) console.error('[intake/message] history error:', historyError)
 
     const history = (existingMessages as DbIntakeMessage[] ?? []).map((m) => ({
       role: (m.role === 'participant' ? 'user' : 'assistant') as 'user' | 'assistant',
@@ -56,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const nextSequence = (existingMessages?.length ?? 0) + 1
 
-    // Encrypt and store the user message
+    console.log('[intake/message] step: encrypt and insert message')
     const encrypted = encryptToDb(content)
     await db.from('intake_messages').insert({
       case_id: caseId,
