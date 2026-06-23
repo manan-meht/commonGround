@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     console.error('[intake/message] step: encrypt and insert message')
     const encrypted = encryptToDb(content)
-    await db.from('intake_messages').insert({
+    const { error: insertError } = await db.from('intake_messages').insert({
       case_id: caseId,
       participant_id: participantId,
       role: 'participant',
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       encryption_tag: encrypted.encryption_tag,
       sequence_number: nextSequence,
     })
+    if (insertError) console.error('[intake/message] insert error:', JSON.stringify(insertError))
 
     // Get case info for AI context
     const { data: caseRow } = await db
