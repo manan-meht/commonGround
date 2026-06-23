@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Common Ground - Perspective Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "on-surface": "#1a1c1b",
+                  "on-secondary-container": "#386b69",
+                  "secondary-container": "#b5eae7",
+                  "on-secondary": "#ffffff",
+                  "inverse-on-surface": "#f1f1ef",
+                  "primary-fixed": "#cceace",
+                  "on-primary-fixed-variant": "#334d38",
+                  "inverse-surface": "#2f3130",
+                  "surface-container-lowest": "#ffffff",
+                  "on-tertiary-container": "#093e3d",
+                  "on-primary-container": "#233d29",
+                  "primary-fixed-dim": "#b0ceb2",
+                  "outline": "#737972",
+                  "surface-container-high": "#e9e8e6",
+                  "tertiary": "#386664",
+                  "surface-container-low": "#f4f3f1",
+                  "surface-bright": "#faf9f7",
+                  "surface": "#faf9f7",
+                  "secondary-fixed": "#b8ecea",
+                  "tertiary-fixed": "#bbece9",
+                  "on-surface-variant": "#424842",
+                  "on-secondary-fixed": "#00201f",
+                  "tertiary-fixed-dim": "#a0cfcd",
+                  "on-error": "#ffffff",
+                  "on-tertiary-fixed-variant": "#1e4e4c",
+                  "primary-container": "#8ba88e",
+                  "surface-container": "#efeeec",
+                  "on-tertiary": "#ffffff",
+                  "on-primary-fixed": "#07200f",
+                  "error-container": "#ffdad6",
+                  "surface-tint": "#4a654e",
+                  "outline-variant": "#c2c8c0",
+                  "error": "#ba1a1a",
+                  "on-primary": "#ffffff",
+                  "tertiary-container": "#7ba9a7",
+                  "secondary": "#346665",
+                  "background": "#faf9f7",
+                  "secondary-fixed-dim": "#9cd0cd",
+                  "on-background": "#1a1c1b",
+                  "primary": "#4a654e",
+                  "on-tertiary-fixed": "#00201f",
+                  "on-error-container": "#93000a",
+                  "inverse-primary": "#b0ceb2",
+                  "surface-dim": "#dadad8",
+                  "surface-variant": "#e3e2e0",
+                  "on-secondary-fixed-variant": "#194e4d",
+                  "surface-container-highest": "#e3e2e0"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "margin-desktop": "40px",
+                  "gutter": "24px",
+                  "stack-md": "24px",
+                  "margin-mobile": "16px",
+                  "stack-lg": "48px",
+                  "stack-sm": "12px",
+                  "container-max": "1200px",
+                  "base": "8px"
+          },
+          "fontFamily": {
+                  "label-md": ["Inter"],
+                  "headline-xl-mobile": ["Inter"],
+                  "headline-lg": ["Inter"],
+                  "body-md": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "label-sm": ["Inter"],
+                  "headline-xl": ["Inter"],
+                  "headline-md": ["Inter"]
+          },
+          "fontSize": {
+                  "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                  "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                  "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                  "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #faf9f7;
+      color: #1a1c1b;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .shadow-ambient {
+      box-shadow: 0 12px 24px -4px rgba(26, 28, 27, 0.05);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Top Navigation (Shell Implementation) -->
+<header class="sticky top-0 z-50 bg-surface shadow-sm px-margin-mobile py-4">
+<div class="flex justify-between items-center max-w-container-max mx-auto">
+<span class="font-headline-md text-headline-md font-bold text-primary">Common Ground</span>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors">
+        Exit
+      </button>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative px-margin-mobile pt-stack-md pb-stack-lg overflow-hidden">
+<div class="absolute inset-0 z-0">
+<!-- Animated Background Visual -->
+
+</div>
+<div class="relative z-10 max-w-container-max mx-auto text-center flex flex-col items-center">
+<div class="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mb-base shadow-ambient">
+<span class="material-symbols-outlined text-on-primary text-4xl">mail</span>
+</div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-stack-sm">
+          You've been invited...
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
+          Someone would like to reach a resolution with you regarding a shared concern.
+        </p>
+</div>
+</section>
+<!-- Context & Topic Card -->
+<section class="px-margin-mobile -mt-stack-lg pb-stack-md">
+<div class="max-w-md mx-auto bg-surface-container-lowest rounded-xl p-stack-md shadow-ambient border border-outline-variant">
+<div class="flex items-center gap-base mb-stack-sm">
+<span class="material-symbols-outlined text-secondary">forum</span>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">The Topic</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-base">Project Timeline Discrepancies</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          The other party is seeking your perspective on the recent changes to the Q3 delivery schedule to ensure mutual understanding and fair outcomes.
+        </p>
+</div>
+</section>
+<!-- Privacy & Trust Bento -->
+<section class="px-margin-mobile py-stack-md">
+<div class="max-w-md mx-auto grid grid-cols-1 gap-base">
+<!-- Safety Guarantee -->
+<div class="bg-secondary-container/30 rounded-xl p-stack-sm flex gap-stack-sm border border-secondary-container">
+<div class="shrink-0">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-secondary-container font-bold">Privacy Guaranteed</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              You cannot see the other person's raw input, and they cannot see yours. Our AI mediator analyzes both to find common ground.
+            </p>
+</div>
+</div>
+<!-- How it works steps -->
+<div class="bg-surface-container-low rounded-xl p-stack-sm">
+<h3 class="font-label-sm text-label-sm text-outline uppercase mb-stack-sm px-base">How it works</h3>
+<div class="space-y-4">
+<div class="flex items-start gap-stack-sm group">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 group-hover:bg-primary-container transition-colors">
+<span class="font-label-md text-label-md text-on-surface">1</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pt-1">You share your perspective privately.</p>
+</div>
+<div class="flex items-start gap-stack-sm group">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="font-label-md text-label-md text-on-surface">2</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pt-1">The mediator identifies shared goals and tensions.</p>
+</div>
+<div class="flex items-start gap-stack-sm group">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="font-label-md text-label-md text-on-surface">3</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pt-1">A collaborative resolution plan is generated.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Anchor / Atmospheric Image -->
+<section class="px-margin-mobile py-stack-md">
+<div class="max-w-md mx-auto h-48 rounded-2xl overflow-hidden shadow-ambient">
+<div class="w-full h-full bg-cover bg-center" data-alt="A tranquil, high-key photography of two minimalist ceramic cups sitting on a light wooden table, bathed in soft afternoon sunlight filtering through a sheer curtain. The color palette is composed of soft sages, creams, and warm wood tones, creating an atmosphere of calm, patient dialogue and psychological safety. The depth of field is shallow, focusing on the texture of the cups to emphasize a human, tactile connection in a modern digital space." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6XahyslObp6Eea2QYRBGgIqoWlYObXl82ybWmF04Zk8oZOSubEP09NvWxXVZzBzKgl4iHeBxQ9xrw_p-ldwQSqLzyhqIVkxeBJbKtzlqEocBWOohLwmLKto5mObrWOX4VW7Gk1p63ZskX3JywcwPFpzJzusyVyU0VRIQUsNgbU8YXlxkkjI6Edc6xBYtj5zsmvPegsEQ9sK9jKc7g38gIJG0_MOhK9n6Rm-w1Lv2HPtRfgOjS-8csNa4iOXRsvlUgnSE7_hVSDA8')"></div>
+</div>
+</section>
+<!-- Call to Action -->
+<section class="sticky bottom-0 bg-surface/90 backdrop-blur-md px-margin-mobile py-stack-md border-t border-outline-variant/30">
+<div class="max-w-md mx-auto flex flex-col gap-base">
+<button class="w-full bg-primary hover:bg-on-primary-fixed-variant text-on-primary py-4 rounded-xl font-label-md text-label-md font-bold shadow-ambient transition-all transform active:scale-95">
+          Share my perspective
+        </button>
+<button class="w-full bg-transparent text-secondary py-3 rounded-xl font-label-md text-label-md hover:bg-secondary/5 transition-colors">
+          Learn more about the process
+        </button>
+</div>
+</section>
+</main>
+<!-- Footer (Shell Implementation) -->
+<footer class="bg-surface-container-lowest py-stack-md px-margin-mobile border-t border-outline-variant">
+<div class="max-w-container-max mx-auto flex flex-col items-center gap-stack-sm text-center">
+<span class="font-headline-md text-headline-md text-primary opacity-50">Common Ground</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+        © 2024 Common Ground. Not a substitute for legal or therapeutic advice.
+      </p>
+<div class="flex gap-4">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline" href="#">Terms</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline" href="#">Support</a>
+</div>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.querySelector('button.bg-primary');
+      btn.addEventListener('click', () => {
+        btn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Initializing Safe Space...</span>';
+        setTimeout(() => {
+          btn.innerHTML = 'Share my perspective';
+        }, 2000);
+      });
+    });
+  </script>
+</body></html>

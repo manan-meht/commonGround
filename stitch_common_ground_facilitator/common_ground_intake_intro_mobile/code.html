@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Private AI Intake | Common Ground</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bento-card {
+            transition: transform 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#1a1c1b",
+                      "on-secondary-container": "#386b69",
+                      "secondary-container": "#b5eae7",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f1f1ef",
+                      "primary-fixed": "#cceace",
+                      "on-primary-fixed-variant": "#334d38",
+                      "inverse-surface": "#2f3130",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#093e3d",
+                      "on-primary-container": "#233d29",
+                      "primary-fixed-dim": "#b0ceb2",
+                      "outline": "#737972",
+                      "surface-container-high": "#e9e8e6",
+                      "tertiary": "#386664",
+                      "surface-container-low": "#f4f3f1",
+                      "surface-bright": "#faf9f7",
+                      "surface": "#faf9f7",
+                      "secondary-fixed": "#b8ecea",
+                      "tertiary-fixed": "#bbece9",
+                      "on-surface-variant": "#424842",
+                      "on-secondary-fixed": "#00201f",
+                      "tertiary-fixed-dim": "#a0cfcd",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#1e4e4c",
+                      "primary-container": "#8ba88e",
+                      "surface-container": "#efeeec",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#07200f",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#4a654e",
+                      "outline-variant": "#c2c8c0",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#7ba9a7",
+                      "secondary": "#346665",
+                      "background": "#faf9f7",
+                      "secondary-fixed-dim": "#9cd0cd",
+                      "on-background": "#1a1c1b",
+                      "primary": "#4a654e",
+                      "on-tertiary-fixed": "#00201f",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b0ceb2",
+                      "surface-dim": "#dadad8",
+                      "surface-variant": "#e3e2e0",
+                      "on-secondary-fixed-variant": "#194e4d",
+                      "surface-container-highest": "#e3e2e0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "stack-md": "24px",
+                      "margin-mobile": "16px",
+                      "stack-lg": "48px",
+                      "stack-sm": "12px",
+                      "container-max": "1200px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "headline-xl-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen">
+<!-- Top Navigation Anchor (Manual Suppression Applied: Checkout/Task Flow Style) -->
+<header class="bg-surface shadow-sm sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile py-4 mx-auto max-w-container-max">
+<span class="font-headline-md text-headline-md font-bold text-primary">Common Ground</span>
+<button class="text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors px-3 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+                Exit
+            </button>
+</div>
+</header>
+<main class="flex-grow flex flex-col px-margin-mobile pb-stack-lg pt-stack-md max-w-lg mx-auto w-full">
+<!-- Welcome Section -->
+<div class="mb-stack-md">
+<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-stack-md shadow-sm">
+<div class="absolute inset-0 bg-primary-container/20 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A serene and empathetic digital illustration of two abstract, soft-edged human silhouettes sitting in a lush, minimalist indoor garden. The scene is bathed in natural, diffused morning light filtered through large windows, creating a sense of psychological safety and de-escalation. The color palette features warm sage greens, soft whites, and muted teal accents, embodying a modern humanist aesthetic that feels like a wellness-oriented sanctuary." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEjDSVTh-8EANQ2zedApUHuEjg81nKtsxEo87Cbps93VfVbcH1oTdaR_1RdhzmjfwNp1R4ath5MhuzwHKm7Q80XUvJ6UWI5I6QH89GkFVXQuwr8F0bZbCxatuOIXVywa4ts3T-Y34DxXBdnjZKhtxRipeWaKOLRaP81D3h3DFNLWXpxXG5ur8yKSu6KE2etDo8joXzqfqzaT43uQl0kA9JOwRlfPz-HqsvPtHMaJb20hD6Yk5R70WoECdw0y7vkABXFvsvzLbOTWI"/>
+</div>
+</div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-2">Share your perspective</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Take a few minutes to walk through your experience in a safe, guided space.</p>
+</div>
+<!-- Info Grid (Asymmetric Layout) -->
+<div class="grid grid-cols-2 gap-base mb-stack-lg">
+<!-- Privacy Card -->
+<div class="col-span-2 p-stack-md bg-white rounded-xl shadow-sm border border-outline-variant/30 flex items-start gap-4">
+<div class="bg-secondary-container p-2 rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="lock" data-weight="fill">lock</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-bold">Private &amp; Confidential</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Your responses are encrypted and only used to find common ground. No data is sold.</p>
+</div>
+</div>
+<!-- Estimated Time Card -->
+<div class="p-stack-md bg-white rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-primary mb-2 text-[32px]" data-icon="schedule">schedule</span>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Estimate</span>
+<span class="font-headline-md text-headline-md text-on-surface">5-10 min</span>
+</div>
+<!-- Steps Card -->
+<div class="p-stack-md bg-white rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-primary mb-2 text-[32px]" data-icon="edit_note">edit_note</span>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Process</span>
+<span class="font-headline-md text-headline-md text-on-surface">3 Steps</span>
+</div>
+</div>
+<!-- Primary Action -->
+<div class="mt-auto pt-stack-md">
+<button class="w-full bg-primary-container text-on-primary py-5 rounded-xl font-headline-md text-headline-md shadow-md active:scale-[0.98] transition-transform hover:bg-primary duration-200">
+                Begin Intake
+            </button>
+<p class="text-center mt-stack-sm font-label-sm text-label-sm text-outline">
+                You can pause and resume at any time.
+            </p>
+</div>
+</main>
+<!-- Footer Area / Safety Note -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/30 px-margin-mobile py-stack-md mt-auto">
+<div class="max-w-lg mx-auto flex flex-col gap-3">
+<div class="flex items-start gap-3 p-3 bg-error-container/20 rounded-lg border border-error-container">
+<span class="material-symbols-outlined text-error text-[20px] mt-0.5" data-icon="warning">warning</span>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-error-container uppercase">Safety Notice</h4>
+<p class="font-body-md text-[14px] leading-tight text-on-error-container/80">
+                        This AI is a mediator, not a legal representative. If you feel physically unsafe, please contact emergency services immediately.
+                    </p>
+</div>
+</div>
+<div class="flex justify-between items-center opacity-60">
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Common Ground</p>
+<div class="flex gap-4">
+<a class="font-label-sm text-label-sm text-primary underline" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-primary underline" href="#">Terms</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- Micro-interaction script for button feedback -->
+<script>
+        document.querySelector('button').addEventListener('mousedown', function() {
+            this.style.opacity = '0.85';
+        });
+        document.querySelector('button').addEventListener('mouseup', function() {
+            this.style.opacity = '1';
+        });
+    </script>
+</body></html>

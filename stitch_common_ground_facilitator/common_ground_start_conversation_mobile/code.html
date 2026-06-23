@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New Mediation | Common Ground</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-active {
+            box-shadow: 0 0 0 4px rgba(74, 101, 122, 0.1);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#1a1c1b",
+                      "on-secondary-container": "#386b69",
+                      "secondary-container": "#b5eae7",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f1f1ef",
+                      "primary-fixed": "#cceace",
+                      "on-primary-fixed-variant": "#334d38",
+                      "inverse-surface": "#2f3130",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#093e3d",
+                      "on-primary-container": "#233d29",
+                      "primary-fixed-dim": "#b0ceb2",
+                      "outline": "#737972",
+                      "surface-container-high": "#e9e8e6",
+                      "tertiary": "#386664",
+                      "surface-container-low": "#f4f3f1",
+                      "surface-bright": "#faf9f7",
+                      "surface": "#faf9f7",
+                      "secondary-fixed": "#b8ecea",
+                      "tertiary-fixed": "#bbece9",
+                      "on-surface-variant": "#424842",
+                      "on-secondary-fixed": "#00201f",
+                      "tertiary-fixed-dim": "#a0cfcd",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#1e4e4c",
+                      "primary-container": "#8ba88e",
+                      "surface-container": "#efeeec",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#07200f",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#4a654e",
+                      "outline-variant": "#c2c8c0",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#7ba9a7",
+                      "secondary": "#346665",
+                      "background": "#faf9f7",
+                      "secondary-fixed-dim": "#9cd0cd",
+                      "on-background": "#1a1c1b",
+                      "primary": "#4a654e",
+                      "on-tertiary-fixed": "#00201f",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b0ceb2",
+                      "surface-dim": "#dadad8",
+                      "surface-variant": "#e3e2e0",
+                      "on-secondary-fixed-variant": "#194e4d",
+                      "surface-container-highest": "#e3e2e0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "stack-md": "24px",
+                      "margin-mobile": "16px",
+                      "stack-lg": "48px",
+                      "stack-sm": "12px",
+                      "container-max": "1200px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "headline-xl-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed-dim selection:text-on-primary-fixed min-h-screen flex flex-col">
+<!-- TopNavBar (Fixed Header) -->
+<header class="sticky top-0 z-50 bg-surface shadow-sm">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary">Common Ground</div>
+<button class="text-on-surface-variant font-label-md flex items-center gap-1 hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+                Exit
+            </button>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero/Introduction Section -->
+<div class="px-margin-mobile pt-stack-md pb-stack-sm md:max-w-xl mx-auto text-center">
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-2">New Mediation</h1>
+<p class="text-on-surface-variant font-body-md">Take the first step toward a constructive dialogue. Your information is encrypted and kept private between you and the mediator.</p>
+</div>
+<!-- Progress Indicator -->
+<div class="px-margin-mobile mb-stack-md flex justify-center items-center gap-4">
+<div class="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="h-[2px] w-8 bg-outline-variant"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant"></div>
+<div class="h-[2px] w-8 bg-outline-variant"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant"></div>
+</div>
+<!-- Setup Form Container -->
+<div class="px-margin-mobile pb-stack-lg max-w-xl mx-auto">
+<form class="space-y-gutter" id="mediation-setup">
+<!-- Section: Personal Info -->
+<section class="space-y-4">
+<h2 class="text-label-sm font-label-sm text-primary tracking-widest uppercase">Your Identity</h2>
+<div class="space-y-stack-sm">
+<label class="block font-label-md text-on-surface-variant ml-1">Legal or Preferred Name</label>
+<input class="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" placeholder="e.g., Alex Rivers" required="" type="text"/>
+</div>
+<div class="space-y-stack-sm">
+<label class="block font-label-md text-on-surface-variant ml-1">Email or Mobile Number</label>
+<input class="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" placeholder="For account verification" required="" type="text"/>
+</div>
+</section>
+<!-- Section: Partner Info -->
+<section class="space-y-4 pt-4">
+<h2 class="text-label-sm font-label-sm text-primary tracking-widest uppercase">Invite Partner</h2>
+<div class="space-y-stack-sm">
+<label class="block font-label-md text-on-surface-variant ml-1">Partner's Name</label>
+<input class="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" placeholder="Who will you be speaking with?" required="" type="text"/>
+</div>
+<div class="space-y-stack-sm">
+<label class="block font-label-md text-on-surface-variant ml-1">Partner's WhatsApp Number</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">+</span>
+<input class="w-full h-14 pl-8 pr-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" placeholder="Country code + number" required="" type="tel"/>
+</div>
+<p class="text-[12px] text-outline-variant mt-1 ml-1 italic">We use WhatsApp for secure, real-time message delivery.</p>
+</div>
+</section>
+<!-- Section: Topic -->
+<section class="space-y-4 pt-4">
+<h2 class="text-label-sm font-label-sm text-primary tracking-widest uppercase">The Conversation</h2>
+<div class="space-y-stack-sm">
+<label class="block font-label-md text-on-surface-variant ml-1">Neutral Discussion Topic</label>
+<textarea class="w-full p-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50 resize-none" placeholder="e.g., 'Shared schedule for the upcoming holidays' or 'Revisiting our budget goals'" required="" rows="3"></textarea>
+<p class="text-[12px] text-on-surface-variant leading-relaxed">
+<span class="font-bold text-primary">Mediator Tip:</span> Frame the topic neutrally to help both parties feel heard from the start.
+                        </p>
+</div>
+</section>
+<!-- Privacy & Consent -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-secondary shrink-0" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<div class="space-y-1">
+<h3 class="text-label-md font-bold text-on-surface">Privacy Notice</h3>
+<p class="text-label-sm text-on-surface-variant leading-tight">Your conversation is end-to-end encrypted. Common Ground AI mediators do not share your private data with third parties or use it for training models outside your session.</p>
+</div>
+</div>
+</div>
+<!-- CTA Actions -->
+<div class="pt-4 space-y-3">
+<button class="w-full h-14 bg-primary text-white rounded-xl font-bold text-body-md hover:bg-on-primary-fixed-variant transition-all active:scale-[0.98] shadow-sm" type="submit">
+                        Continue privately
+                    </button>
+<button class="w-full h-12 bg-transparent text-on-surface-variant rounded-xl font-label-md hover:bg-surface-variant transition-colors" type="button">
+                        Save draft for later
+                    </button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant py-stack-md">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto gap-stack-sm text-center md:text-left">
+<div class="font-headline-md text-headline-md text-primary font-bold">Common Ground</div>
+<p class="text-on-surface-variant font-body-md text-sm md:max-w-md">
+                © 2024 Common Ground. Not a substitute for legal or therapeutic advice.
+            </p>
+<div class="flex gap-4">
+<a class="text-on-surface-variant font-label-sm hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="text-on-surface-variant font-label-sm hover:text-primary transition-colors" href="#">Terms</a>
+<a class="text-on-surface-variant font-label-sm hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+<!-- Atmosphere/Micro-interaction Script -->
+<script>
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.classList.add('step-active');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.classList.remove('step-active');
+            });
+        });
+
+        const form = document.getElementById('mediation-setup');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Subtle feedback for submission
+            const btn = form.querySelector('button[type="submit"]');
+            btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Initializing...</span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert("Mediation setup initiated. Waiting for your partner to join.");
+                window.location.reload();
+            }, 1500);
+        });
+    </script>
+</body></html>

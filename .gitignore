@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# local env — NEVER commit
+.env.local
+.env.*.local
+
+# build output
+.next/
+out/
+dist/
+
+# testing
+coverage/
+playwright-report/
+playwright/.cache/
+test-results/
+
+# misc
+.DS_Store
+*.pem
+.vercel
+*.log

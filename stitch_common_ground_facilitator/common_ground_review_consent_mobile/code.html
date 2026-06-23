@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#1a1c1b",
+                    "on-secondary-container": "#386b69",
+                    "secondary-container": "#b5eae7",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f1f1ef",
+                    "primary-fixed": "#cceace",
+                    "on-primary-fixed-variant": "#334d38",
+                    "inverse-surface": "#2f3130",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#093e3d",
+                    "on-primary-container": "#233d29",
+                    "primary-fixed-dim": "#b0ceb2",
+                    "outline": "#737972",
+                    "surface-container-high": "#e9e8e6",
+                    "tertiary": "#386664",
+                    "surface-container-low": "#f4f3f1",
+                    "surface-bright": "#faf9f7",
+                    "surface": "#faf9f7",
+                    "secondary-fixed": "#b8ecea",
+                    "tertiary-fixed": "#bbece9",
+                    "on-surface-variant": "#424842",
+                    "on-secondary-fixed": "#00201f",
+                    "tertiary-fixed-dim": "#a0cfcd",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#1e4e4c",
+                    "primary-container": "#8ba88e",
+                    "surface-container": "#efeeec",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#07200f",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#4a654e",
+                    "outline-variant": "#c2c8c0",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#7ba9a7",
+                    "secondary": "#346665",
+                    "background": "#faf9f7",
+                    "secondary-fixed-dim": "#9cd0cd",
+                    "on-background": "#1a1c1b",
+                    "primary": "#4a654e",
+                    "on-tertiary-fixed": "#00201f",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#b0ceb2",
+                    "surface-dim": "#dadad8",
+                    "surface-variant": "#e3e2e0",
+                    "on-secondary-fixed-variant": "#194e4d",
+                    "surface-container-highest": "#e3e2e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-md": "24px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "48px",
+                    "stack-sm": "12px",
+                    "container-max": "1200px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-xl-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #faf9f7;
+            font-family: 'Inter', sans-serif;
+            color: #1a1c1b;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .custom-shadow-sm {
+            box-shadow: 0 4px 12px rgba(26, 28, 27, 0.1);
+        }
+        .custom-shadow-md {
+            box-shadow: 0 8px 24px rgba(26, 28, 27, 0.15);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen">
+<!-- TopNavBar (Mobile Logic) -->
+<header class="sticky top-0 z-50 bg-surface shadow-sm px-margin-mobile py-4 flex justify-between items-center w-full">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Common Ground</h1>
+<button class="font-label-md text-label-md text-primary font-bold transition-opacity hover:opacity-80">Exit</button>
+</header>
+<main class="flex-1 px-margin-mobile pt-stack-md pb-40">
+<!-- Progress Steps -->
+<div class="flex items-center justify-between mb-stack-lg max-w-sm mx-auto">
+<div class="flex flex-col items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container"></div>
+<span class="text-[10px] font-label-sm text-outline uppercase tracking-wider">Share</span>
+</div>
+<div class="h-[1px] flex-1 bg-outline-variant mx-2 mb-6"></div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary ring-4 ring-secondary-container animate-pulse"></div>
+<span class="text-[10px] font-label-sm text-secondary font-bold uppercase tracking-wider">Review</span>
+</div>
+<div class="h-[1px] flex-1 bg-outline-variant mx-2 mb-6"></div>
+<div class="flex flex-col items-center gap-2 opacity-40">
+<div class="w-2.5 h-2.5 rounded-full bg-outline"></div>
+<span class="text-[10px] font-label-sm text-outline uppercase tracking-wider">Meditate</span>
+</div>
+</div>
+<div class="space-y-4">
+<h2 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-2">Review your perspective</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-md leading-relaxed">
+                Take a moment to ensure this accurately reflects your experience. This summary will be used by the AI mediator to find common ground.
+            </p>
+<!-- Card: What Happened -->
+<section class="bg-surface-container-lowest p-6 rounded-xl custom-shadow-sm border border-outline-variant relative group">
+<button class="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+<h3 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wide">What happened</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                    The conversation began around 2:00 PM regarding the project deadlines. I felt that my contributions were being overlooked during the sprint planning, and the tone became dismissive when I raised concerns about the timeline.
+                </p>
+</section>
+<!-- Card: Experience -->
+<section class="bg-surface-container-lowest p-6 rounded-xl custom-shadow-sm border border-outline-variant relative">
+<button class="absolute top-4 right-4 text-secondary">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-primary" data-icon="mood">mood</span>
+<h3 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wide">Experience</h3>
+</div>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm text-label-sm">Frustrated</span>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm text-label-sm">Misunderstood</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                    My main feeling is a lack of psychological safety within the team structure. I want to contribute, but I feel like my expertise isn't being utilized correctly.
+                </p>
+</section>
+<!-- Card: Needs -->
+<section class="bg-surface-container-lowest p-6 rounded-xl custom-shadow-sm border border-outline-variant relative">
+<button class="absolute top-4 right-4 text-secondary">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-primary" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-label-md text-label-md text-primary font-bold uppercase tracking-wide">Needs</h3>
+</div>
+<ul class="space-y-2">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-sm mt-1" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Recognition of individual capacity limits</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-sm mt-1" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Structured feedback loops in planning</span>
+</li>
+</ul>
+</section>
+<!-- Card: AI Insight (Asymmetric Layout Element) -->
+<section class="bg-primary-container/10 p-6 rounded-xl border-2 border-dashed border-primary/20 relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="psychology">psychology</span>
+</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">MEDIATOR INSIGHT</span>
+</div>
+<p class="font-body-md text-body-md text-primary-fixed-variant italic">
+                    "I noticed you emphasized 'timeline' three times. It seems like timing is the core stressor here."
+                </p>
+</section>
+</div>
+</main>
+<!-- Fixed Bottom Section -->
+<footer class="fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant px-margin-mobile pt-4 pb-8 z-50">
+<div class="max-w-container-max mx-auto space-y-4">
+<label class="flex items-start gap-3 group cursor-pointer">
+<div class="relative flex items-center mt-1">
+<input class="peer h-5 w-5 rounded border-outline text-secondary focus:ring-secondary transition-all cursor-pointer" id="consent" type="checkbox"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">
+                    I consent to share this summary with the other party to initiate the mediation process.
+                </span>
+</label>
+<button class="w-full bg-outline text-white py-4 rounded-xl font-bold text-body-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="submitBtn">
+                Submit my perspective
+            </button>
+</div>
+</footer>
+<script>
+        const checkbox = document.getElementById('consent');
+        const submitBtn = document.getElementById('submitBtn');
+
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-outline');
+                submitBtn.classList.add('bg-primary');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.remove('bg-primary');
+                submitBtn.classList.add('bg-outline');
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            if (!submitBtn.disabled) {
+                submitBtn.innerHTML = `
+                    <span class="flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sharing...
+                    </span>
+                `;
+                setTimeout(() => {
+                    alert('Perspective submitted successfully. Transitioning to mediation space.');
+                    location.reload();
+                }, 1500);
+            }
+        });
+    </script>
+</body></html>

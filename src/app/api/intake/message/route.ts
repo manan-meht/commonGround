@@ -1,0 +1,110 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth/session'
+import { getServiceClient } from '@/lib/db/client'
+import { encryptToDb } from '@/lib/crypto'
+import { IntakeMessageSchema } from '@/lib/validation/schemas'
+import { continueIntake } from '@/lib/ai/intake'
+import { decryptFromDb } from '@/lib/crypto'
+import type { DbIntakeMessage } from '@/lib/db/types'
+
+export async function POST(req: NextRequest) {
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
+  }
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 })
+  }
+
+  const parsed = IntakeMessageSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ errors: parsed.error.flatten().fieldErrors }, { status: 422 })
+  }
+
+  const { content } = parsed.data
+  const { participantId, caseId, role } = session
+
+  try {
+    const db = getServiceClient()
+
+    // Verify participant intake is not yet complete
+    const { data: participant } = await db
+      .from('participants')
+      .select('intake_completed_at')
+      .eq('id', participantId)
+      .single()
+
+    if (participant?.intake_completed_at) {
+      return NextResponse.json({ error: 'Your intake has already been completed.' }, { status: 409 })
+    }
+
+    // Get existing history
+    const { data: existingMessages } = await db
+      .from('intake_messages')
+      .select('*')
+      .eq('participant_id', participantId)
+      .order('sequence_number', { ascending: true })
+
+    const history = (existingMessages as DbIntakeMessage[] ?? []).map((m) => ({
+      role: (m.role === 'participant' ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: decryptFromDb(m),
+    }))
+
+    const nextSequence = (existingMessages?.length ?? 0) + 1
+
+    // Encrypt and store the user message
+    const encrypted = encryptToDb(content)
+    await db.from('intake_messages').insert({
+      case_id: caseId,
+      participant_id: participantId,
+      role: 'participant',
+      encrypted_content: encrypted.encrypted_content,
+      encryption_iv: encrypted.encryption_iv,
+      encryption_tag: encrypted.encryption_tag,
+      sequence_number: nextSequence,
+    })
+
+    // Get case info for AI context
+    const { data: caseRow } = await db
+      .from('cases')
+      .select('topic, initiator_name, recipient_name')
+      .eq('id', caseId)
+      .single()
+
+    if (!caseRow) {
+      return NextResponse.json({ error: 'Case not found.' }, { status: 404 })
+    }
+
+    const otherPartyName =
+      role === 'initiator' ? caseRow.recipient_name : caseRow.initiator_name
+    const participantName =
+      role === 'initiator' ? caseRow.initiator_name : caseRow.recipient_name
+
+    // Call AI
+    const aiResponse = await continueIntake(
+      { participantName, role, topic: caseRow.topic, otherPartyName },
+      [...history, { role: 'user', content }]
+    )
+
+    // Store the AI response
+    const aiEncrypted = encryptToDb(aiResponse)
+    await db.from('intake_messages').insert({
+      case_id: caseId,
+      participant_id: participantId,
+      role: 'assistant',
+      encrypted_content: aiEncrypted.encrypted_content,
+      encryption_iv: aiEncrypted.encryption_iv,
+      encryption_tag: aiEncrypted.encryption_tag,
+      sequence_number: nextSequence + 1,
+    })
+
+    return NextResponse.json({ message: aiResponse })
+  } catch (err) {
+    console.error('[POST /api/intake/message] Error:', err)
+    return NextResponse.json({ error: 'Failed to process message.' }, { status: 500 })
+  }
+}

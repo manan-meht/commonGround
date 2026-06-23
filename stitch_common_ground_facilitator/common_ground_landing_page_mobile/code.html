@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Common Ground | Psychological Safety & Resolution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#1a1c1b",
+                    "on-secondary-container": "#386b69",
+                    "secondary-container": "#b5eae7",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f1f1ef",
+                    "primary-fixed": "#cceace",
+                    "on-primary-fixed-variant": "#334d38",
+                    "inverse-surface": "#2f3130",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#093e3d",
+                    "on-primary-container": "#233d29",
+                    "primary-fixed-dim": "#b0ceb2",
+                    "outline": "#737972",
+                    "surface-container-high": "#e9e8e6",
+                    "tertiary": "#386664",
+                    "surface-container-low": "#f4f3f1",
+                    "surface-bright": "#faf9f7",
+                    "surface": "#faf9f7",
+                    "secondary-fixed": "#b8ecea",
+                    "tertiary-fixed": "#bbece9",
+                    "on-surface-variant": "#424842",
+                    "on-secondary-fixed": "#00201f",
+                    "tertiary-fixed-dim": "#a0cfcd",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#1e4e4c",
+                    "primary-container": "#8ba88e",
+                    "surface-container": "#efeeec",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#07200f",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#4a654e",
+                    "outline-variant": "#c2c8c0",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#7ba9a7",
+                    "secondary": "#346665",
+                    "background": "#faf9f7",
+                    "secondary-fixed-dim": "#9cd0cd",
+                    "on-background": "#1a1c1b",
+                    "primary": "#4a654e",
+                    "on-tertiary-fixed": "#00201f",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#b0ceb2",
+                    "surface-dim": "#dadad8",
+                    "surface-variant": "#e3e2e0",
+                    "on-secondary-fixed-variant": "#194e4d",
+                    "surface-container-highest": "#e3e2e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-md": "24px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "48px",
+                    "stack-sm": "12px",
+                    "container-max": "1200px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-xl-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .soft-shadow {
+            box-shadow: 0 12px 24px -10px rgba(26, 28, 27, 0.1);
+        }
+        .gradient-mesh {
+            background-color: #faf9f7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 168, 142, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(74, 124, 122, 0.1) 0px, transparent 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="bg-surface sticky top-0 z-50 shadow-sm flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-extrabold text-primary">
+            Common Ground
+        </div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md transition-all active:scale-95">
+            Exit
+        </button>
+</nav>
+<main class="relative">
+<!-- Hero Section -->
+<section class="gradient-mesh px-margin-mobile pt-stack-lg pb-stack-md text-center">
+<div class="max-w-2xl mx-auto">
+<span class="inline-block bg-primary-container/20 text-on-primary-container px-3 py-1 rounded-full font-label-sm mb-4">
+                    AI-POWERED MEDIATION
+                </span>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-6 leading-tight">
+                    Understand each other before deciding what comes next
+                </h1>
+<p class="text-on-surface-variant font-body-lg mb-8 max-w-md mx-auto">
+                    De-escalate conflict and find common ground through a private, neutral AI mediator designed for safety and clarity.
+                </p>
+<button class="w-full sm:w-auto bg-primary text-on-primary px-8 py-4 rounded-xl font-headline-md shadow-md active:opacity-80 transition-opacity">
+                    Start a conversation
+                </button>
+</div>
+<div class="mt-12 relative h-48 w-full rounded-2xl overflow-hidden soft-shadow bg-surface-container">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A serene and minimalist interior space with soft morning sunlight streaming through large windows. Two clean, modern armchairs face each other across a low wooden table with a single small plant. The color palette is composed of soft sage greens, warm greys, and crisp whites, evoking a sense of calm, psychological safety, and neutral ground." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4Z6y5z3Gc2_na9dg0x4KqdvscUxrvCgfXDzoJJHZdzBE83MhwS3CPhRQoKOmoPdjAtp9BiSd4wuDc8TorKsN6aL9jQRYVHoWtpG3KlltbqOlpsIPnqzWw_Wk0V6YiizHBVgYY97R1mqMDMonXxbSb9HEHSMKl9ftQE0caMnYQ3-2sZGIv0xycUGO3s5-OlRY2D5cRJ1wnuy6pePgKfzNqBs6fpKk97cctVHoTV2ancDoPeKohdwmtPAElesLcQfOYjSRSpTRfacg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-40"></div>
+</div>
+</section>
+<!-- The Process (3-Step) -->
+<section class="px-margin-mobile py-stack-lg">
+<h2 class="font-headline-md text-on-surface mb-stack-md text-center">Our Neutral Process</h2>
+<div class="flex flex-col gap-8 relative">
+<!-- Connector Line -->
+<div class="absolute left-6 top-8 bottom-8 w-0.5 bg-outline-variant hidden"></div>
+<!-- Step 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl soft-shadow border border-outline-variant/30 transition-transform active:scale-[0.98]">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-primary-container/20 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">1. Share privately</h3>
+<p class="text-on-surface-variant">Each person shares their perspective with the AI mediator in a confidential, pressure-free space.</p>
+</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl soft-shadow border border-outline-variant/30 transition-transform active:scale-[0.98]">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-secondary-container/30 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">2. Invite</h3>
+<p class="text-on-surface-variant">Once you're ready, securely invite the other party to share their view. The AI remains neutral to both.</p>
+</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl soft-shadow border border-outline-variant/30 transition-transform active:scale-[0.98]">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 shrink-0 bg-tertiary-container/30 rounded-full flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">3. Review report</h3>
+<p class="text-on-surface-variant">Receive a synthesized report highlighting areas of alignment and concrete paths forward, with no pressure to agree.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Messaging Section -->
+<section class="bg-surface-container-low px-margin-mobile py-stack-lg">
+<div class="max-w-md mx-auto text-center mb-10">
+<span class="material-symbols-outlined text-primary text-5xl mb-4" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h2 class="font-headline-md text-on-surface mb-4">Built on Psychological Safety</h2>
+<p class="text-on-surface-variant">We don't pick sides. We use evidence-based de-escalation techniques to turn emotional friction into productive dialogue.</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface p-4 rounded-xl border border-outline-variant text-center">
+<span class="material-symbols-outlined text-secondary mb-2">encrypted</span>
+<p class="font-label-sm">Fully Encrypted</p>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant text-center">
+<span class="material-symbols-outlined text-secondary mb-2">balance</span>
+<p class="font-label-sm">Algorithmic Neutrality</p>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant text-center">
+<span class="material-symbols-outlined text-secondary mb-2">visibility_off</span>
+<p class="font-label-sm">Anonymized Data</p>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant text-center">
+<span class="material-symbols-outlined text-secondary mb-2">volunteer_activism</span>
+<p class="font-label-sm">Non-Adversarial</p>
+</div>
+</div>
+</section>
+<!-- Situational Examples (Bento-style Cards) -->
+<section class="px-margin-mobile py-stack-lg">
+<h2 class="font-headline-md text-on-surface mb-stack-md text-center">When to use Common Ground</h2>
+<div class="flex flex-col gap-4">
+<!-- Card 1 -->
+<div class="bg-white p-6 rounded-3xl soft-shadow overflow-hidden group">
+<div class="flex justify-between items-center mb-4">
+<span class="bg-primary-container/20 text-on-primary-container px-3 py-1 rounded-full font-label-sm">Couples</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">favorite</span>
+</div>
+<p class="font-body-md text-on-surface">"We're stuck in the same argument about our future. We need a way to talk that doesn't end in shouting."</p>
+<div class="mt-4 flex items-center gap-2 text-primary font-label-md">
+<span>Learn more</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-6 rounded-3xl soft-shadow overflow-hidden group">
+<div class="flex justify-between items-center mb-4">
+<span class="bg-secondary-container/30 text-on-secondary-container px-3 py-1 rounded-full font-label-sm">Co-founders</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-secondary transition-colors">work</span>
+</div>
+<p class="font-body-md text-on-surface">"We disagree on the product roadmap and it's stalling our progress. We need a neutral view to realign."</p>
+<div class="mt-4 flex items-center gap-2 text-secondary font-label-md">
+<span>Learn more</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-6 rounded-3xl soft-shadow overflow-hidden group">
+<div class="flex justify-between items-center mb-4">
+<span class="bg-tertiary-container/30 text-on-tertiary-container px-3 py-1 rounded-full font-label-sm">Family</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-tertiary transition-colors">groups</span>
+</div>
+<p class="font-body-md text-on-surface">"Distributing an inheritance is causing tension. We want to preserve relationships while deciding."</p>
+<div class="mt-4 flex items-center gap-2 text-tertiary font-label-md">
+<span>Learn more</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="bg-primary text-on-primary px-margin-mobile py-stack-lg mx-margin-mobile rounded-[2rem] mb-stack-lg text-center overflow-hidden relative">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<svg height="100%" preserveaspectratio="none" viewbox="0 0 100 100" width="100%">
+<circle cx="50" cy="50" fill="white" fill-opacity="0.5" r="40"></circle>
+<circle cx="80" cy="20" fill="white" fill-opacity="0.3" r="20"></circle>
+</svg>
+</div>
+<div class="relative z-10">
+<h2 class="font-headline-lg text-white mb-4">Ready to find clarity?</h2>
+<p class="text-white/80 mb-8 max-w-xs mx-auto">Start your individual session today. It takes less than 10 minutes to begin the path forward.</p>
+<button class="w-full bg-white text-primary px-8 py-4 rounded-xl font-headline-md active:bg-surface-variant transition-colors">
+                    Start Now
+                </button>
+</div>
+</section>
+</main>
+<!-- Side Navigation Shell (Hidden on Mobile, but defined for logic) -->
+<div class="hidden lg:flex fixed left-0 top-0 h-full w-80 bg-surface-container-low flex-col gap-base py-stack-md px-4 border-r border-outline-variant">
+<div class="mb-8">
+<h2 class="font-headline-md text-primary font-bold">Resources</h2>
+<p class="text-on-surface-variant text-body-md">Confidential Support</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">security</span> Safety Info
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">privacy_tip</span> Privacy Policy
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">gavel</span> Ground Rules
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">help</span> Help Center
+            </a>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant w-full py-stack-md mt-auto">
+<div class="flex flex-col items-center px-margin-mobile gap-stack-sm max-w-container-max mx-auto text-center">
+<div class="font-headline-md text-primary mb-2">Common Ground</div>
+<div class="flex flex-wrap justify-center gap-4 text-label-sm text-on-surface-variant mb-4">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+<p class="text-label-sm text-on-surface-variant opacity-70">
+                © 2024 Common Ground. Not a substitute for legal or therapeutic advice.
+            </p>
+</div>
+</footer>
+<!-- FAB for quick action (Suppressed as per rules on landing) -->
+<script>
+        // Micro-interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.soft-shadow');
+            
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('opacity-100');
+                        entry.target.classList.remove('translate-y-4');
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                card.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-700', 'ease-out');
+                observer.observe(card);
+            });
+        });
+    </script>
+</body></html>

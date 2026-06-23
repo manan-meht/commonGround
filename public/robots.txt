@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /case/
+Disallow: /invite/
+Disallow: /start
+Disallow: /api/
+
+Allow: /
+Allow: /privacy
+Allow: /terms
+Allow: /safety
+
+Sitemap: https://yourdomain.com/sitemap.xml

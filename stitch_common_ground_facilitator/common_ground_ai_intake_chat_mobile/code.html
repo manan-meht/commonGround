@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Common Ground | Private Intake</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chat-container {
+            height: calc(100vh - 180px);
+        }
+        /* Custom scrollbar for a cleaner look */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Soft Sage Bubble Tail */
+        .bubble-user {
+            border-bottom-right-radius: 4px !important;
+        }
+        /* AI Bubble Tail */
+        .bubble-ai {
+            border-bottom-left-radius: 4px !important;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#1a1c1b",
+                      "on-secondary-container": "#386b69",
+                      "secondary-container": "#b5eae7",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f1f1ef",
+                      "primary-fixed": "#cceace",
+                      "on-primary-fixed-variant": "#334d38",
+                      "inverse-surface": "#2f3130",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#093e3d",
+                      "on-primary-container": "#233d29",
+                      "primary-fixed-dim": "#b0ceb2",
+                      "outline": "#737972",
+                      "surface-container-high": "#e9e8e6",
+                      "tertiary": "#386664",
+                      "surface-container-low": "#f4f3f1",
+                      "surface-bright": "#faf9f7",
+                      "surface": "#faf9f7",
+                      "secondary-fixed": "#b8ecea",
+                      "tertiary-fixed": "#bbece9",
+                      "on-surface-variant": "#424842",
+                      "on-secondary-fixed": "#00201f",
+                      "tertiary-fixed-dim": "#a0cfcd",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#1e4e4c",
+                      "primary-container": "#8ba88e",
+                      "surface-container": "#efeeec",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#07200f",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#4a654e",
+                      "outline-variant": "#c2c8c0",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#7ba9a7",
+                      "secondary": "#346665",
+                      "background": "#faf9f7",
+                      "secondary-fixed-dim": "#9cd0cd",
+                      "on-background": "#1a1c1b",
+                      "primary": "#4a654e",
+                      "on-tertiary-fixed": "#00201f",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b0ceb2",
+                      "surface-dim": "#dadad8",
+                      "surface-variant": "#e3e2e0",
+                      "on-secondary-fixed-variant": "#194e4d",
+                      "surface-container-highest": "#e3e2e0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "stack-md": "24px",
+                      "margin-mobile": "16px",
+                      "stack-lg": "48px",
+                      "stack-sm": "12px",
+                      "container-max": "1200px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "headline-xl-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface antialiased flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar Strategy: Transactional/Sub-page suppression of global nav. Minimal header used. -->
+<header class="bg-surface shadow-sm z-30 sticky top-0 px-margin-mobile py-4">
+<div class="max-w-container-max mx-auto flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary">Mediation Intake</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Private conversation</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Compact 5-Stage Progress Bar -->
+<div class="flex items-center justify-between gap-2 px-1">
+<!-- Step 1: Active/Current -->
+<div class="flex-1 h-1.5 rounded-full bg-primary relative overflow-hidden">
+<div class="absolute inset-0 bg-white/30 animate-pulse"></div>
+</div>
+<!-- Step 2: Upcoming -->
+<div class="flex-1 h-1.5 rounded-full bg-surface-container-highest"></div>
+<!-- Step 3: Upcoming -->
+<div class="flex-1 h-1.5 rounded-full bg-surface-container-highest"></div>
+<!-- Step 4: Upcoming -->
+<div class="flex-1 h-1.5 rounded-full bg-surface-container-highest"></div>
+<!-- Step 5: Upcoming -->
+<div class="flex-1 h-1.5 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+</header>
+<!-- Main Chat Canvas -->
+<main class="flex-grow overflow-y-auto chat-container hide-scrollbar bg-surface relative px-margin-mobile py-stack-md">
+<div class="max-w-xl mx-auto flex flex-col gap-stack-md">
+<!-- Date/System Marker -->
+<div class="text-center">
+<span class="bg-surface-container-low px-3 py-1 rounded-full font-label-sm text-label-sm text-outline">Today, 2:45 PM</span>
+</div>
+<!-- AI Message 1 -->
+<div class="flex items-start gap-3 w-full max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-2xl bubble-ai shadow-sm">
+<p class="font-body-md text-body-md">Hello. I'm here to help you prepare for your mediation session. This is a private space—nothing you share here will be seen by the other party without your explicit consent.</p>
+</div>
+</div>
+<!-- AI Message 2 -->
+<div class="flex items-start gap-3 w-full max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-2xl bubble-ai shadow-sm">
+<p class="font-body-md text-body-md">To get started, could you describe the main issue from your perspective? Take your time.</p>
+</div>
+</div>
+<!-- User Message 1 (Simulated) -->
+<div class="flex flex-col items-end gap-1 w-full">
+<div class="bg-primary-container text-on-primary-container p-4 rounded-2xl bubble-user shadow-sm max-w-[85%]">
+<p class="font-body-md text-body-md">It's mainly about the noise levels in the common area. I feel like my requests for quiet hours are being ignored, and it's affecting my work from home schedule.</p>
+</div>
+<span class="text-[10px] text-outline px-1">Delivered</span>
+</div>
+<!-- AI Message 3 -->
+<div class="flex items-start gap-3 w-full max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-2xl bubble-ai shadow-sm">
+<p class="font-body-md text-body-md">I understand. Feeling unheard in your own space can be very stressful. How does this impact your daily routine specifically?</p>
+</div>
+</div>
+<!-- Invisible anchor for auto-scroll -->
+<div id="anchor"></div>
+</div>
+</main>
+<!-- Bottom Input Section -->
+<footer class="bg-surface border-t border-outline-variant p-4 pb-8 md:pb-4">
+<div class="max-w-xl mx-auto flex flex-col gap-3">
+<!-- Suggested Actions / Contextual Buttons -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar">
+<button class="whitespace-nowrap px-4 py-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full border border-outline-variant/30 hover:bg-surface-variant transition-all">
+                    I'm ready to continue
+                </button>
+<button class="whitespace-nowrap px-4 py-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full border border-outline-variant/30 hover:bg-surface-variant transition-all">
+                    Tell me more about privacy
+                </button>
+</div>
+<!-- Multi-line Input Area -->
+<div class="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
+<textarea class="flex-grow bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md py-2 px-3 min-h-[44px] max-h-32 text-on-surface" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" placeholder="Type your reflection here..." rows="1"></textarea>
+<button class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity shrink-0 mb-0.5">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<!-- Final Goal Action -->
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>I'm ready</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</footer>
+<script>
+        // Micro-interaction: Auto-scroll to bottom of chat
+        const container = document.querySelector('main');
+        container.scrollTop = container.scrollHeight;
+
+        // Intersection observer for header elevation
+        const header = document.querySelector('header');
+        const observer = new IntersectionObserver(
+            ([e]) => header.classList.toggle('shadow-md', e.intersectionRatio < 1),
+            { threshold: [1] }
+        );
+        // Note: In a real app, you'd observe a sentinel element at the very top.
+    </script>
+</body></html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Resolution Report | Common Ground</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#1a1c1b",
+                    "on-secondary-container": "#386b69",
+                    "secondary-container": "#b5eae7",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f1f1ef",
+                    "primary-fixed": "#cceace",
+                    "on-primary-fixed-variant": "#334d38",
+                    "inverse-surface": "#2f3130",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#093e3d",
+                    "on-primary-container": "#233d29",
+                    "primary-fixed-dim": "#b0ceb2",
+                    "outline": "#737972",
+                    "surface-container-high": "#e9e8e6",
+                    "tertiary": "#386664",
+                    "surface-container-low": "#f4f3f1",
+                    "surface-bright": "#faf9f7",
+                    "surface": "#faf9f7",
+                    "secondary-fixed": "#b8ecea",
+                    "tertiary-fixed": "#bbece9",
+                    "on-surface-variant": "#424842",
+                    "on-secondary-fixed": "#00201f",
+                    "tertiary-fixed-dim": "#a0cfcd",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#1e4e4c",
+                    "primary-container": "#8ba88e",
+                    "surface-container": "#efeeec",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#07200f",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#4a654e",
+                    "outline-variant": "#c2c8c0",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#7ba9a7",
+                    "secondary": "#346665",
+                    "background": "#faf9f7",
+                    "secondary-fixed-dim": "#9cd0cd",
+                    "on-background": "#1a1c1b",
+                    "primary": "#4a654e",
+                    "on-tertiary-fixed": "#00201f",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#b0ceb2",
+                    "surface-dim": "#dadad8",
+                    "surface-variant": "#e3e2e0",
+                    "on-secondary-fixed-variant": "#194e4d",
+                    "surface-container-highest": "#e3e2e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-md": "24px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "48px",
+                    "stack-sm": "12px",
+                    "container-max": "1200px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-xl-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .perspective-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, transparent, currentColor, transparent);
+            opacity: 0.2;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes subtle-float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: subtle-float 4s ease-in-out infinite; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-surface shadow-sm">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">psychology_alt</span>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Common Ground</h1>
+</div>
+<button class="text-on-surface-variant font-label-md px-4 py-2 hover:text-secondary transition-colors transition-opacity active:opacity-80">
+                Exit
+            </button>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-32">
+<!-- Report Header Section -->
+<section class="py-stack-lg animate-float">
+<div class="flex flex-col items-center text-center gap-stack-sm">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm uppercase tracking-widest">Shared Resolution Report</span>
+<h2 class="font-headline-xl-mobile text-headline-xl-mobile md:font-headline-xl md:text-headline-xl text-on-surface">Path to Understanding</h2>
+<p class="text-on-surface-variant max-w-xl font-body-lg text-body-lg">A neutral synthesis of your conversation, highlighting shared values and defining the way forward.</p>
+</div>
+</section>
+<!-- Neutral Summary Section -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/30 mb-stack-md">
+<div class="flex items-center gap-3 mb-4 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">info</span>
+<h3 class="font-headline-md text-headline-md">Neutral Summary</h3>
+</div>
+<p class="text-on-surface-variant leading-relaxed font-body-md text-body-md">
+                The core of this discussion revolves around balancing individual creative freedom with the collective need for standardized processes. Both parties express a strong commitment to the project's success but differ on the implementation of feedback loops. The conversation has shifted from a place of frustration to a collaborative exploration of "middle-ground" frameworks.
+            </p>
+</section>
+<!-- Perspectives (Paraphrased) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
+<!-- Perspective A -->
+<div class="perspective-card relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 border-primary/40">
+<div class="flex items-center gap-2 mb-3 text-primary">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm uppercase tracking-wider">Perspective Alpha</span>
+</div>
+<p class="italic text-on-surface-variant font-body-md">
+                    "I feel that the current constraints are stifling the very innovation we were hired for. It’s important to have space to breathe before being measured by KPIs."
+                </p>
+<div class="mt-4 pt-4 border-t border-outline-variant/20">
+<p class="text-sm font-medium text-secondary">Core Need: Creative Autonomy</p>
+</div>
+</div>
+<!-- Perspective B -->
+<div class="perspective-card relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 border-secondary/40">
+<div class="flex items-center gap-2 mb-3 text-secondary">
+<span class="material-symbols-outlined">person_4</span>
+<span class="font-label-sm uppercase tracking-wider">Perspective Beta</span>
+</div>
+<p class="italic text-on-surface-variant font-body-md">
+                    "From my view, without clear benchmarks, we lose the ability to predict timelines and deliver quality consistently. I need clarity to manage expectations."
+                </p>
+<div class="mt-4 pt-4 border-t border-outline-variant/20">
+<p class="text-sm font-medium text-primary">Core Need: Operational Clarity</p>
+</div>
+</div>
+</section>
+<!-- Visual Anchor (Generated Image) -->
+<div class="w-full h-48 md:h-64 rounded-2xl overflow-hidden mb-stack-lg relative">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<img class="w-full h-full object-cover" data-alt="A serene landscape featuring two calm, mist-shrouded mountain peaks meeting in a soft, fertile valley filled with wildflowers. The atmosphere is peaceful, using a color palette of sage greens, soft teals, and warm greys. The lighting is low-contrast morning light, suggesting a fresh start and mutual understanding. The style is modern, cinematic, and evokes emotional safety and de-escalation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCck86i3zKscSQlkU7VrHNqTwg9gFYV9VONQ0djMqmYaH7fLs2vm2cDupxjG2by3DKAd9Sk26XsysZagaxlsbOmrR2Wk2Dbt0HRwGNCThkIPc5f2m4PPDGs-FNMOb6VRPWjw6hQByRuqGKZGaUU6Xp3KVdt42CYOSQ4jQ0gD48fJ-VZHIJlOgPQtKwtwxDOGXN2FAze1xmvWT_MVVBiDyHybpKOEgEorc7JwOWQKJLKo73HglCeCh9Ky0gBo50AofgewlieWuVkSkI"/>
+<div class="absolute bottom-6 left-6 z-20 text-white">
+<h4 class="font-headline-md">The Synthesis</h4>
+<p class="font-body-md opacity-90">Building bridges across differing needs.</p>
+</div>
+</div>
+<!-- Areas of Agreement -->
+<section class="mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-stack-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">handshake</span>
+                Areas of Agreement
+            </h3>
+<div class="space-y-3">
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<p class="font-body-md">Both parties agree that the final output quality is the top priority.</p>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<p class="font-body-md">Recognition that the current communication frequency is insufficient.</p>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<p class="font-body-md">Mutual desire for a documented "Rules of Engagement" document.</p>
+</div>
+</div>
+</section>
+<!-- Disconnects -->
+<section class="mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-stack-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">error</span>
+                Remaining Disconnects
+            </h3>
+<div class="bg-error-container/20 border border-error/10 p-6 rounded-xl">
+<ul class="space-y-4 list-none">
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-error mt-0.5">priority_high</span>
+<div>
+<p class="font-bold text-on-surface">The Threshold for "Standardization"</p>
+<p class="text-on-surface-variant font-body-md">What exactly constitutes a "rigid" rule versus a "helpful" guideline remains undefined.</p>
+</div>
+</li>
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-error mt-0.5">priority_high</span>
+<div>
+<p class="font-bold text-on-surface">Feedback Cadence</p>
+<p class="text-on-surface-variant font-body-md">Weekly versus Bi-weekly check-ins; finding a rhythm that feels supportive, not intrusive.</p>
+</div>
+</li>
+</ul>
+</div>
+</section>
+<!-- Next Steps Checklist -->
+<section class="mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-stack-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">fact_check</span>
+                Next Steps Checklist
+            </h3>
+<div class="space-y-2">
+<label class="flex items-center p-4 bg-white rounded-xl shadow-sm cursor-pointer group hover:bg-surface-container transition-colors">
+<input class="w-6 h-6 rounded border-outline-variant text-primary focus:ring-primary mr-4" type="checkbox"/>
+<span class="font-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Draft the initial "Creative Liberty" boundaries document.</span>
+</label>
+<label class="flex items-center p-4 bg-white rounded-xl shadow-sm cursor-pointer group hover:bg-surface-container transition-colors">
+<input class="w-6 h-6 rounded border-outline-variant text-primary focus:ring-primary mr-4" type="checkbox"/>
+<span class="font-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Schedule a 15-minute alignment sync for Tuesday morning.</span>
+</label>
+<label class="flex items-center p-4 bg-white rounded-xl shadow-sm cursor-pointer group hover:bg-surface-container transition-colors">
+<input class="w-6 h-6 rounded border-outline-variant text-primary focus:ring-primary mr-4" type="checkbox"/>
+<span class="font-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Share the updated project timeline with external stakeholders.</span>
+</label>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-md bg-surface-container-lowest border-t border-outline-variant mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto gap-stack-sm">
+<div class="text-center md:text-left">
+<p class="font-headline-md text-primary font-bold">Common Ground</p>
+<p class="font-body-md text-label-sm text-on-surface-variant opacity-70 mt-1">© 2024 Common Ground. Not a substitute for legal or therapeutic advice.</p>
+</div>
+<div class="flex gap-6">
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+<!-- Sticky Bottom Bar Actions -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] border-t border-outline-variant/30">
+<div class="max-w-container-max mx-auto flex gap-4 md:justify-center">
+<button class="flex-1 md:flex-none md:min-w-[180px] bg-white border border-secondary text-secondary py-3 px-6 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-secondary-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-xl">download</span>
+                Download
+            </button>
+<button class="flex-1 md:flex-none md:min-w-[220px] bg-primary text-white py-3 px-6 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+                Create agreement
+            </button>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        // Checkbox interaction feedback
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const text = this.nextElementSibling;
+                if(this.checked) {
+                    text.classList.add('line-through', 'opacity-50');
+                } else {
+                    text.classList.remove('line-through', 'opacity-50');
+                }
+            });
+        });
+
+        // Sticky Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-md');
+                header.classList.remove('shadow-sm');
+            } else {
+                header.classList.remove('shadow-md');
+                header.classList.add('shadow-sm');
+            }
+        });
+    </script>
+</body></html>

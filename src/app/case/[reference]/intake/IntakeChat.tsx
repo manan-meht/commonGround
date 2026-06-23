@@ -1,0 +1,327 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface Props {
+  caseReference: string
+  caseId: string
+  topic: string
+  participantName: string
+  otherPartyName: string
+  role: 'initiator' | 'recipient'
+}
+
+const INITIAL_MESSAGE: Message = {
+  role: 'assistant',
+  content: "Hello. I'm here to help you prepare your private perspective. This is a confidential space — nothing you share here will be seen directly by the other participant. To get started, could you describe what happened from your perspective? Take your time.",
+}
+
+export function IntakeChat({ caseReference, topic, participantName }: Props) {
+  const router = useRouter()
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+  const [showSummaryStep, setShowSummaryStep] = useState(false)
+  const [summary, setSummary] = useState('')
+  const [consented, setConsented] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Load existing history on mount
+  useEffect(() => {
+    fetch('/api/intake/history')
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json() as { messages: Array<{role: string; content: string}> }
+          if (data.messages && data.messages.length > 0) {
+            setMessages(
+              data.messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+            )
+          }
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  async function sendMessage() {
+    const trimmed = input.trim()
+    if (!trimmed || sending) return
+
+    setInput('')
+    setSending(true)
+    setError('')
+
+    const userMsg: Message = { role: 'user', content: trimmed }
+    setMessages((prev) => [...prev, userMsg])
+
+    try {
+      const res = await fetch('/api/intake/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: trimmed }),
+      })
+
+      const data = await res.json() as { message?: string; error?: string }
+
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to send message.')
+        return
+      }
+
+      if (data.message) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.message! }])
+
+        // Check if AI is signalling it's ready to summarise
+        if (
+          data.message.toLowerCase().includes('ready to generate') ||
+          data.message.toLowerCase().includes('generate a summary') ||
+          data.message.toLowerCase().includes('ready to review')
+        ) {
+          void requestSummary()
+        }
+      }
+    } catch {
+      setError('A network error occurred. Please try again.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function requestSummary() {
+    setSending(true)
+    try {
+      const transcript = messages
+        .map((m) => `${m.role === 'user' ? participantName : 'Facilitator'}: ${m.content}`)
+        .join('\n\n')
+
+      const res = await fetch('/api/intake/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript }),
+      })
+
+      const data = await res.json() as { summary?: string; error?: string }
+      if (res.ok && data.summary) {
+        setSummary(data.summary)
+        setShowSummaryStep(true)
+      }
+    } catch {
+      setError('Failed to generate summary.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function submitIntake() {
+    if (!consented || !summary) return
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/intake/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summary, consented: true }),
+      })
+
+      const data = await res.json() as { success?: boolean; readyForAnalysis?: boolean; error?: string; errors?: Record<string, string[]> }
+
+      if (!res.ok) {
+        const fieldErrors = data.errors ? Object.values(data.errors).flat().join(' ') : ''
+        setError(fieldErrors || data.error || 'Failed to submit.')
+        setSubmitting(false)
+        return
+      }
+
+      if (data.readyForAnalysis) {
+        // Trigger analysis in background
+        fetch(`/api/cases/${caseReference}/analyse`, { method: 'POST' }).catch(() => {})
+      }
+
+      router.push(`/case/${caseReference}/waiting`)
+    } catch {
+      setError('A network error occurred.')
+      setSubmitting(false)
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      void sendMessage()
+    }
+  }
+
+  const exchangeCount = messages.filter((m) => m.role === 'user').length
+  const progressPct = Math.min((exchangeCount / 10) * 100, 95)
+
+  return (
+    <div className="flex flex-col h-screen overflow-hidden bg-surface font-body-md text-on-surface antialiased">
+      {/* Header */}
+      <header className="bg-surface shadow-sm z-30 sticky top-0 px-margin-mobile py-4">
+        <div className="max-w-container-max mx-auto flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col">
+              <span className="font-headline-md text-headline-md font-bold text-primary">Private Intake</span>
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant">
+                  Private · {topic}
+                </span>
+              </div>
+            </div>
+            <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant" aria-label="Exit">
+              <span className="material-symbols-outlined">close</span>
+            </Link>
+          </div>
+          {/* Progress bar */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-label-sm text-on-surface-variant whitespace-nowrap">{exchangeCount} of ~10</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Chat canvas */}
+      <main className="flex-grow overflow-y-auto hide-scrollbar bg-surface px-margin-mobile py-stack-md" aria-live="polite" aria-label="Conversation">
+        <div className="max-w-xl mx-auto flex flex-col gap-stack-md">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${msg.role === 'user' ? 'flex-col items-end' : 'items-start gap-3'} w-full`}
+            >
+              {msg.role === 'assistant' && (
+                <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-secondary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                </div>
+              )}
+              <div
+                className={
+                  msg.role === 'user'
+                    ? 'bg-primary-container text-on-primary-container p-4 rounded-2xl bubble-user shadow-sm max-w-[85%]'
+                    : 'bg-surface-container-highest text-on-surface p-4 rounded-2xl bubble-ai shadow-sm max-w-[85%]'
+                }
+              >
+                <p className="font-body-md text-body-md whitespace-pre-wrap">{msg.content}</p>
+              </div>
+            </div>
+          ))}
+
+          {sending && (
+            <div className="flex items-start gap-3 w-full max-w-[85%]">
+              <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-secondary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+              </div>
+              <div className="bg-surface-container-highest p-4 rounded-2xl bubble-ai shadow-sm">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-outline rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-outline rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-outline rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+      </main>
+
+      {/* Input area */}
+      {!showSummaryStep ? (
+        <footer className="bg-surface border-t border-outline-variant p-4 pb-8 md:pb-4">
+          <div className="max-w-xl mx-auto flex flex-col gap-3">
+            {error && (
+              <p className="text-error text-label-md" role="alert">{error}</p>
+            )}
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+              {exchangeCount >= 6 && (
+                <button
+                  onClick={requestSummary}
+                  className="whitespace-nowrap px-4 py-2 bg-primary-container/20 text-on-primary-container font-label-md text-label-md rounded-full border border-primary/20 hover:bg-primary-container/30 transition-all"
+                >
+                  I&apos;m ready to review a summary
+                </button>
+              )}
+            </div>
+            <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                rows={1}
+                maxLength={4000}
+                placeholder="Type your reflection here…"
+                className="flex-grow bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md py-2 px-3 min-h-[44px] max-h-32 text-on-surface"
+                aria-label="Your message"
+              />
+              <button
+                onClick={() => void sendMessage()}
+                disabled={!input.trim() || sending}
+                className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity shrink-0 mb-0.5 disabled:opacity-40"
+                aria-label="Send message"
+              >
+                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
+              </button>
+            </div>
+          </div>
+        </footer>
+      ) : (
+        /* Summary & consent step */
+        <footer className="bg-surface border-t border-outline-variant p-4 pb-8 md:pb-4 max-h-[60vh] overflow-y-auto">
+          <div className="max-w-xl mx-auto flex flex-col gap-4">
+            <h2 className="font-headline-md text-on-surface">Review your summary</h2>
+            <p className="text-on-surface-variant font-body-md">
+              Take a moment to review this summary. You can edit it before submitting.
+            </p>
+            {error && <p className="text-error text-label-md" role="alert">{error}</p>}
+            <textarea
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              rows={8}
+              maxLength={8000}
+              className="w-full p-4 bg-white border border-outline-variant rounded-xl focus:border-secondary outline-none resize-none font-body-md text-body-md"
+              aria-label="Your summary"
+            />
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consented}
+                onChange={(e) => setConsented(e.target.checked)}
+                className="mt-1 h-5 w-5 rounded border-outline-variant text-secondary focus:ring-secondary"
+              />
+              <span className="font-body-md text-on-surface-variant">
+                I understand that my raw answers will not be shown directly to the other participant,
+                but the AI may reflect the meaning of what I shared in the joint report.
+              </span>
+            </label>
+            <button
+              onClick={() => void submitIntake()}
+              disabled={!consented || submitting || !summary.trim()}
+              className="w-full py-4 bg-primary text-white rounded-xl font-bold text-body-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {submitting ? 'Submitting…' : 'Submit my perspective'}
+            </button>
+          </div>
+        </footer>
+      )}
+    </div>
+  )
+}
