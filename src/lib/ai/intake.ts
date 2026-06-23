@@ -14,7 +14,10 @@ export interface ChatMessage {
 function getClient(): OpenAI {
   const { OPENAI_API_KEY } = getEnv()
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.')
-  return new OpenAI({ apiKey: OPENAI_API_KEY })
+  return new OpenAI({
+    apiKey: OPENAI_API_KEY,
+    fetch: globalThis.fetch,
+  })
 }
 
 export async function continueIntake(
