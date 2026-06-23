@@ -76,6 +76,8 @@ export default async function WaitingPage({ params }: PageProps) {
         recipientName={caseRow.recipient_name}
         completedCount={count ?? 0}
         whatsAppUrl={whatsAppUrl}
+        recipientPhone={caseRow.recipient_phone}
+        initiatorName={caseRow.initiator_name}
       />
       <SiteFooter />
     </div>

@@ -12,6 +12,8 @@ interface Props {
   recipientName: string
   completedCount: number
   whatsAppUrl?: string
+  recipientPhone?: string
+  initiatorName?: string
 }
 
 export function WaitingView({
@@ -22,12 +24,28 @@ export function WaitingView({
   role,
   recipientName,
   completedCount: initialCount,
-  whatsAppUrl,
+  whatsAppUrl: whatsAppUrlProp,
+  recipientPhone,
+  initiatorName,
 }: Props) {
   const router = useRouter()
   const [currentStatus, setCurrentStatus] = useState(status)
   const [completedCount, setCompletedCount] = useState(initialCount)
   const [copied, setCopied] = useState(false)
+  const [inviteLink, setInviteLink] = useState<string>('')
+  const [whatsAppUrl, setWhatsAppUrl] = useState<string | undefined>(whatsAppUrlProp)
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('cg_invite_link')
+    if (stored) {
+      setInviteLink(stored)
+      if (role === 'initiator' && recipientPhone && initiatorName) {
+        const phone = recipientPhone.replace(/\D/g, '')
+        const msg = encodeURIComponent(`Hi, ${initiatorName} has invited you to Common Ground to work through "${topic}" together. Join here: ${stored}`)
+        setWhatsAppUrl(`https://wa.me/${phone}?text=${msg}`)
+      }
+    }
+  }, [role, recipientPhone, initiatorName, topic])
 
   // Poll for status updates
   useEffect(() => {
@@ -52,8 +70,7 @@ export function WaitingView({
   }, [caseId, caseReference, router])
 
   async function copyLink() {
-    const link = whatsAppUrl?.split('?text=')[0] ?? window.location.href
-    await navigator.clipboard.writeText(link)
+    await navigator.clipboard.writeText(inviteLink || window.location.href)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
@@ -116,7 +133,7 @@ export function WaitingView({
       </section>
 
       {/* Share section (initiator only) */}
-      {role === 'initiator' && whatsAppUrl && (
+      {role === 'initiator' && inviteLink && (
         <div className="w-full space-y-4 mb-stack-md">
           <p className="font-label-sm text-outline uppercase tracking-widest">Share the invitation</p>
           <a

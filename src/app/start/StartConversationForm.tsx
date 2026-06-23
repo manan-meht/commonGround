@@ -31,7 +31,7 @@ export function StartConversationForm() {
         body: JSON.stringify(body),
       })
 
-      const data = await res.json() as { caseReference?: string; errors?: Record<string, string[]>; error?: string }
+      const data = await res.json() as { caseReference?: string; inviteLink?: string; errors?: Record<string, string[]>; error?: string }
 
       if (!res.ok) {
         if (data.errors) setErrors(data.errors)
@@ -40,6 +40,7 @@ export function StartConversationForm() {
       }
 
       if (data.caseReference) {
+        if (data.inviteLink) sessionStorage.setItem('cg_invite_link', data.inviteLink)
         router.push(`/case/${data.caseReference}/intake`)
       }
     } catch {
