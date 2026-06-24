@@ -15,6 +15,7 @@ export interface SessionPayload {
   caseId: string
   caseReference: string
   role: ParticipantRole
+  inviteToken?: string
 }
 
 function getSecret(): Uint8Array {
