@@ -18,6 +18,71 @@ interface Props {
   role: 'initiator' | 'recipient'
 }
 
+interface SummaryData {
+  whatHappened?: string
+  emotionalImpact?: string
+  theirNeeds?: string[]
+  theirInterpretation?: string
+  whatOtherPartyMayHaveExperienced?: string
+  theirContribution?: string
+  desiredOutcome?: string
+  keyThemes?: string[]
+}
+
+const SUMMARY_FIELDS: { key: keyof SummaryData; label: string; icon: string }[] = [
+  { key: 'whatHappened', label: 'What happened', icon: 'description' },
+  { key: 'emotionalImpact', label: 'Emotional impact', icon: 'favorite' },
+  { key: 'theirNeeds', label: 'Your needs', icon: 'volunteer_activism' },
+  { key: 'theirInterpretation', label: 'Your interpretation', icon: 'psychology' },
+  { key: 'whatOtherPartyMayHaveExperienced', label: "The other person's experience", icon: 'group' },
+  { key: 'theirContribution', label: 'Your contribution', icon: 'self_improvement' },
+  { key: 'desiredOutcome', label: 'Desired outcome', icon: 'flag' },
+  { key: 'keyThemes', label: 'Key themes', icon: 'label' },
+]
+
+function SummaryCard({ summary }: { summary: string }) {
+  let parsed: SummaryData | null = null
+  try {
+    parsed = JSON.parse(summary) as SummaryData
+  } catch {
+    // not valid JSON — show raw text
+  }
+
+  if (!parsed) {
+    return (
+      <div className="bg-white rounded-xl border border-outline-variant p-4">
+        <p className="font-body-md text-on-surface whitespace-pre-wrap">{summary}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {SUMMARY_FIELDS.map(({ key, label, icon }) => {
+        const value = parsed![key]
+        if (!value || (Array.isArray(value) && value.length === 0)) return null
+        return (
+          <div key={key} className="bg-white rounded-xl border border-outline-variant p-4 flex gap-3">
+            <span className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+            <div className="flex-1">
+              <p className="text-label-sm font-medium text-primary uppercase tracking-wide mb-1">{label}</p>
+              {Array.isArray(value) ? (
+                <ul className="list-disc list-inside space-y-0.5">
+                  {value.map((item, i) => (
+                    <li key={i} className="font-body-md text-on-surface">{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="font-body-md text-on-surface">{value}</p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   content: "Hello. I'm here to help you prepare your private perspective. This is a confidential space — nothing you share here will be seen directly by the other participant. To get started, could you describe what happened from your perspective? Take your time.",
@@ -284,43 +349,59 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
           </div>
         </footer>
       ) : (
-        /* Summary & consent step */
-        <footer className="bg-surface border-t border-outline-variant p-4 pb-8 md:pb-4 max-h-[60vh] overflow-y-auto">
-          <div className="max-w-xl mx-auto flex flex-col gap-4">
-            <h2 className="font-headline-md text-on-surface">Review your summary</h2>
-            <p className="text-on-surface-variant font-body-md">
-              Take a moment to review this summary. You can edit it before submitting.
-            </p>
-            {error && <p className="text-error text-label-md" role="alert">{error}</p>}
-            <textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              rows={8}
-              maxLength={8000}
-              className="w-full p-4 bg-white border border-outline-variant rounded-xl focus:border-secondary outline-none resize-none font-body-md text-body-md"
-              aria-label="Your summary"
-            />
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={consented}
-                onChange={(e) => setConsented(e.target.checked)}
-                className="mt-1 h-5 w-5 rounded border-outline-variant text-secondary focus:ring-secondary"
-              />
-              <span className="font-body-md text-on-surface-variant">
-                I understand that my raw answers will not be shown directly to the other participant,
-                but the AI may reflect the meaning of what I shared in the joint report.
-              </span>
-            </label>
-            <button
-              onClick={() => void submitIntake()}
-              disabled={!consented || submitting || !summary.trim()}
-              className="w-full py-4 bg-primary text-white rounded-xl font-bold text-body-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              {submitting ? 'Submitting…' : 'Submit my perspective'}
-            </button>
+        /* Summary & consent step — full-screen overlay */
+        <div className="fixed inset-0 z-50 bg-surface flex flex-col">
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-4 border-b border-outline-variant bg-surface shrink-0">
+            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>summarize</span>
+            <div>
+              <h2 className="font-headline-sm text-on-surface leading-tight">Review your summary</h2>
+              <p className="text-label-sm text-on-surface-variant">Check the details below, then submit</p>
+            </div>
           </div>
-        </footer>
+
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="max-w-xl mx-auto flex flex-col gap-6">
+              <SummaryCard summary={summary} />
+
+              <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/40">
+                <p className="text-label-sm text-on-surface-variant font-medium mb-2 uppercase tracking-wide">Need to correct something?</p>
+                <textarea
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  rows={6}
+                  maxLength={16000}
+                  className="w-full p-3 bg-white border border-outline-variant rounded-lg focus:border-secondary outline-none resize-none font-mono text-[12px] text-on-surface-variant"
+                  aria-label="Edit your summary"
+                />
+              </div>
+
+              {error && <p className="text-error text-label-md" role="alert">{error}</p>}
+
+              <label className="flex items-start gap-3 cursor-pointer bg-secondary-container/20 p-4 rounded-xl">
+                <input
+                  type="checkbox"
+                  checked={consented}
+                  onChange={(e) => setConsented(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-outline-variant text-secondary focus:ring-secondary shrink-0"
+                />
+                <span className="font-body-md text-on-surface-variant">
+                  I understand that my raw answers will not be shown directly to the other participant,
+                  but the AI may reflect the meaning of what I shared in the joint report.
+                </span>
+              </label>
+
+              <button
+                onClick={() => void submitIntake()}
+                disabled={!consented || submitting || !summary.trim()}
+                className="w-full py-4 bg-primary text-white rounded-xl font-bold text-body-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+              >
+                {submitting ? 'Submitting…' : 'Submit my perspective'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
