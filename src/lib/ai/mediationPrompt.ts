@@ -134,7 +134,9 @@ IDENTIFY:
 Where an apology may be helpful, explain what it should acknowledge without forcing an admission to disputed facts.
 
 OUTPUT FORMAT:
-You must respond with a single valid JSON object conforming to the schema provided. No preamble, no markdown, no explanation outside the JSON.`
+You must respond with a single valid JSON object. The top-level keys must be exactly:
+reportTitle, neutralOverview, agreedFacts, disputedInterpretations, initiatorPerspective, recipientPerspective, pointsOfAgreement, sharedGoals, misunderstandings, intentionVsImpact, initiatorNeeds, recipientNeeds, initiatorAccountability, recipientAccountability, recommendedNextSteps, suggestedOpeningScript, conversationGuidelines, possibleAgreements, unresolvedIssues, professionalSupportSuggestion, safetyCategory, safetyExplanation, reportLimitations.
+No preamble, no markdown, no wrapper object, no explanation outside the JSON.`
 }
 
 export function buildMediationUserMessage(ctx: MediationContext): string {

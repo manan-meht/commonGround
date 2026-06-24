@@ -52,6 +52,18 @@ export async function runAnalysis(ctx: MediationContext): Promise<ValidatedShare
     throw new Error('OpenAI returned invalid JSON in analysis response.')
   }
 
+  // OpenAI sometimes wraps the object in a single root key e.g. { "report": {...} }
+  // Unwrap it if the top-level has exactly one key and the value is an object.
+  if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+    const keys = Object.keys(parsed as Record<string, unknown>)
+    if (keys.length === 1) {
+      const inner = (parsed as Record<string, unknown>)[keys[0]!]
+      if (inner !== null && typeof inner === 'object' && !Array.isArray(inner)) {
+        parsed = inner
+      }
+    }
+  }
+
   const result = SharedReportSchema.safeParse(parsed)
   if (!result.success) {
     throw new Error(`OpenAI analysis response failed schema validation: ${JSON.stringify(result.error.issues, null, 2)}`)
