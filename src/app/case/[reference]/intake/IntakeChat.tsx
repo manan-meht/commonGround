@@ -365,19 +365,7 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
             <div className="max-w-xl mx-auto flex flex-col gap-6">
               <SummaryCard summary={summary} />
 
-              <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/40">
-                <p className="text-label-sm text-on-surface-variant font-medium mb-2 uppercase tracking-wide">Need to correct something?</p>
-                <textarea
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  rows={6}
-                  maxLength={16000}
-                  className="w-full p-3 bg-white border border-outline-variant rounded-lg focus:border-secondary outline-none resize-none font-mono text-[12px] text-on-surface-variant"
-                  aria-label="Edit your summary"
-                />
-              </div>
-
-              {error && <p className="text-error text-label-md" role="alert">{error}</p>}
+{error && <p className="text-error text-label-md" role="alert">{error}</p>}
 
               <label className="flex items-start gap-3 cursor-pointer bg-secondary-container/20 p-4 rounded-xl">
                 <input
