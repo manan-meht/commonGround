@@ -60,7 +60,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Another analysis is already in progress.' }, { status: 409 })
   }
 
-  // Create analysis record
+  // Upsert analysis record — handles retries where a failed record already exists
+  await db.from('analyses').delete().eq('case_id', caseId).in('status', ['failed', 'running'])
+
   const { data: analysisRow } = await db
     .from('analyses')
     .insert({
