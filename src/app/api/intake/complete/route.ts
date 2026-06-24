@@ -5,6 +5,7 @@ import { encryptSummaryToDb, decryptSummaryFromDb } from '@/lib/crypto'
 import { IntakeCompleteSchema } from '@/lib/validation/schemas'
 import { runAnalysis, MEDIATION_PROMPT_VERSION } from '@/lib/ai/analysis'
 import type { DbSubmission } from '@/lib/db/types'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
@@ -107,8 +108,12 @@ export async function POST(req: NextRequest) {
           .single()
 
         if (analysisRow) {
-          // Run analysis in background — don't await so client gets response immediately
-          void (async () => {
+          // Register with Cloudflare ctx.waitUntil so the Worker stays alive
+          // after the response is sent, long enough to complete the analysis.
+          let cfCtx: { waitUntil: (p: Promise<unknown>) => void } | null = null
+          try { cfCtx = getCloudflareContext().ctx } catch { /* local dev — no CF context */ }
+
+          const analysisPromise = (async () => {
             try {
               const { data: participantRows } = await db
                 .from('participants')
@@ -187,6 +192,10 @@ export async function POST(req: NextRequest) {
               await db.from('cases').update({ status: 'ready_for_analysis' }).eq('id', caseId)
             }
           })()
+
+          if (cfCtx) {
+            cfCtx.waitUntil(analysisPromise)
+          }
         }
       }
     }
