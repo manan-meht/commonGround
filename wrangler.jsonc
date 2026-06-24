@@ -19,6 +19,6 @@
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_AdXDDLdiOpXAP-038mWfHg_51KIPd-L",
     "NEXT_PUBLIC_APP_URL": "https://commonground.mandarth-manan.workers.dev",
     "OPENAI_MODEL": "gpt-4o",
-    "DEMO_MODE": "false"
+    "DEMO_MODE": "true"
   }
 }
