@@ -32,6 +32,9 @@ export function WaitingView({
   const [copied, setCopied] = useState(false)
   const [inviteLink, setInviteLink] = useState<string>(inviteLinkProp ?? '')
 
+  const isGenerating = ['ready_for_analysis', 'analysing'].includes(currentStatus)
+  const isReportReady = ['report_ready', 'needs_safety_review'].includes(currentStatus)
+
   useEffect(() => {
     if (!inviteLinkProp) {
       const stored = sessionStorage.getItem('cg_invite_link')
@@ -39,8 +42,10 @@ export function WaitingView({
     }
   }, [inviteLinkProp])
 
-  // Poll for status updates
+  // Poll for status updates — faster when analysis is in progress
   useEffect(() => {
+    const pollInterval = isGenerating ? 3000 : 8000
+
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/cases/${caseId}/status`)
@@ -56,10 +61,10 @@ export function WaitingView({
       } catch {
         // ignore polling errors
       }
-    }, 8000)
+    }, pollInterval)
 
     return () => clearInterval(interval)
-  }, [caseId, caseReference, router])
+  }, [caseId, caseReference, router, isGenerating])
 
   async function copyLink() {
     const link = inviteLink || window.location.href
@@ -75,7 +80,7 @@ export function WaitingView({
       done: completedCount >= 2,
       active: completedCount < 2,
     },
-    { label: 'Shared report being generated', done: ['report_ready', 'needs_safety_review'].includes(currentStatus), active: currentStatus === 'analysing' },
+    { label: 'Shared report being generated', done: isReportReady, active: isGenerating },
   ]
 
   return (
@@ -116,8 +121,8 @@ export function WaitingView({
                 <p className={`font-label-md text-label-md ${step.active ? 'text-primary font-bold' : 'text-on-surface'}`}>
                   {step.label}
                 </p>
-                {step.active && currentStatus === 'analysing' && (
-                  <p className="text-label-sm text-on-surface-variant">Analysis in progress…</p>
+                {step.active && isGenerating && (
+                  <p className="text-label-sm text-on-surface-variant animate-pulse">Analysing both perspectives…</p>
                 )}
               </div>
             </div>

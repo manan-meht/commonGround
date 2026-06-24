@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth/session'
 import { getServiceClient } from '@/lib/db/client'
-import { encryptSummaryToDb } from '@/lib/crypto'
+import { encryptSummaryToDb, decryptSummaryFromDb } from '@/lib/crypto'
 import { IntakeCompleteSchema } from '@/lib/validation/schemas'
+import { runAnalysis, MEDIATION_PROMPT_VERSION } from '@/lib/ai/analysis'
+import type { DbSubmission } from '@/lib/db/types'
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
@@ -81,28 +83,112 @@ export async function POST(req: NextRequest) {
       participants.every((p) => !!p.intake_completed_at)
 
     if (allComplete) {
-      await db
+      // Atomically transition to analysing — only proceeds if not already picked up
+      const { data: caseRow } = await db
         .from('cases')
-        .update({ status: 'ready_for_analysis' })
+        .update({ status: 'analysing', analysis_started_at: new Date().toISOString() })
+        .in('status', ['awaiting_recipient', 'ready_for_analysis'])
         .eq('id', caseId)
-        .eq('status', 'awaiting_recipient')
+        .select('id, topic, initiator_name, recipient_name')
+        .single()
 
-      await db.from('audit_events').insert({
-        case_id: caseId,
-        event_type: 'ready_for_analysis',
-        metadata: null,
-      })
+      if (caseRow) {
+        await db.from('audit_events').insert({
+          case_id: caseId,
+          event_type: 'ready_for_analysis',
+          metadata: null,
+        })
 
-      // Trigger analysis immediately — fire and forget so response is not delayed
-      const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
-      const cronSecret = process.env['CRON_SECRET']
-      void fetch(`${appUrl}/api/cases/${caseId}/analyse`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(cronSecret ? { Authorization: `Bearer ${cronSecret}` } : {}),
-        },
-      }).catch((err) => console.error('[intake/complete] Failed to trigger analysis:', err))
+        // Create analysis record
+        const { data: analysisRow } = await db
+          .from('analyses')
+          .insert({ case_id: caseId, status: 'running', prompt_version: MEDIATION_PROMPT_VERSION })
+          .select('id')
+          .single()
+
+        if (analysisRow) {
+          // Run analysis in background — don't await so client gets response immediately
+          void (async () => {
+            try {
+              const { data: participantRows } = await db
+                .from('participants')
+                .select('id, role')
+                .eq('case_id', caseId)
+
+              const initiatorP = participantRows?.find((p) => p.role === 'initiator')
+              const recipientP = participantRows?.find((p) => p.role === 'recipient')
+              if (!initiatorP || !recipientP) throw new Error('Missing participants')
+
+              const { data: submissions } = await db
+                .from('submissions')
+                .select('participant_id, encrypted_summary, encryption_iv, encryption_tag')
+                .eq('case_id', caseId)
+                .order('revision_number', { ascending: false })
+
+              const submissionMap = new Map<string, string>()
+              for (const sub of (submissions as DbSubmission[] ?? [])) {
+                if (!submissionMap.has(sub.participant_id)) {
+                  submissionMap.set(sub.participant_id, decryptSummaryFromDb(sub))
+                }
+              }
+
+              const initiatorSummary = submissionMap.get(initiatorP.id)
+              const recipientSummary = submissionMap.get(recipientP.id)
+              if (!initiatorSummary || !recipientSummary) throw new Error('Missing submissions')
+
+              const report = await runAnalysis({
+                initiatorName: caseRow.initiator_name,
+                recipientName: caseRow.recipient_name,
+                topic: caseRow.topic,
+                initiatorSummary,
+                recipientSummary,
+              })
+
+              const safetySensitive = [
+                'possible_coercion_or_abuse',
+                'possible_self_harm_or_violence',
+                'possible_child_safety_issue',
+                'legal_or_professional_support_needed',
+              ].includes(report.safetyCategory)
+
+              const finalStatus = safetySensitive ? 'needs_safety_review' : 'report_ready'
+
+              await db.from('analyses').update({
+                status: 'complete',
+                model: process.env['OPENAI_MODEL'] ?? 'gpt-4o',
+                structured_result: report,
+                safety_category: report.safetyCategory,
+                safety_explanation: report.safetyExplanation,
+              }).eq('id', analysisRow.id)
+
+              await db.from('cases').update({
+                status: finalStatus,
+                analysis_completed_at: new Date().toISOString(),
+              }).eq('id', caseId)
+
+              if (report.possibleAgreements.length > 0) {
+                await db.from('agreements').insert(
+                  report.possibleAgreements.map((text) => ({
+                    case_id: caseId,
+                    analysis_id: analysisRow.id,
+                    agreement_text: text,
+                  }))
+                )
+              }
+
+              await db.from('audit_events').insert({
+                case_id: caseId,
+                event_type: 'analysis_complete',
+                metadata: { safety_category: report.safetyCategory },
+              })
+            } catch (err) {
+              console.error('[intake/complete] Analysis failed:', err)
+              await db.from('analyses').update({ status: 'failed', error_message: String(err) }).eq('id', analysisRow.id)
+              await db.from('cases').update({ status: 'ready_for_analysis' }).eq('id', caseId)
+            }
+          })()
+        }
+      }
     }
 
     return NextResponse.json({ success: true, readyForAnalysis: allComplete ?? false })
