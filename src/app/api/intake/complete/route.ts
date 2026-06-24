@@ -92,6 +92,17 @@ export async function POST(req: NextRequest) {
         event_type: 'ready_for_analysis',
         metadata: null,
       })
+
+      // Trigger analysis immediately — fire and forget so response is not delayed
+      const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
+      const cronSecret = process.env['CRON_SECRET']
+      void fetch(`${appUrl}/api/cases/${caseId}/analyse`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cronSecret ? { Authorization: `Bearer ${cronSecret}` } : {}),
+        },
+      }).catch((err) => console.error('[intake/complete] Failed to trigger analysis:', err))
     }
 
     return NextResponse.json({ success: true, readyForAnalysis: allComplete ?? false })
