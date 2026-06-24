@@ -18,7 +18,7 @@ import { MOCK_REPORT } from './mockReport'
 export async function runAnalysis(ctx: MediationContext): Promise<ValidatedSharedReport> {
   const { OPENAI_MODEL, OPENAI_API_KEY, DEMO_MODE } = getEnv()
 
-  if (DEMO_MODE && !OPENAI_API_KEY) {
+  if (DEMO_MODE) {
     await new Promise((r) => setTimeout(r, 1000))  // simulate processing time
     return MOCK_REPORT
   }

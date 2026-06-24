@@ -26,7 +26,7 @@ export async function continueIntake(
 ): Promise<string> {
   const { OPENAI_MODEL, DEMO_MODE } = getEnv()
 
-  if (DEMO_MODE && !process.env['OPENAI_API_KEY']) {
+  if (DEMO_MODE) {
     return getDemoResponse(history.length)
   }
 
@@ -56,7 +56,7 @@ export async function generateIntakeSummary(
 ): Promise<string> {
   const { OPENAI_MODEL, DEMO_MODE } = getEnv()
 
-  if (DEMO_MODE && !process.env['OPENAI_API_KEY']) {
+  if (DEMO_MODE) {
     return JSON.stringify(getDemoSummary(ctx))
   }
 
