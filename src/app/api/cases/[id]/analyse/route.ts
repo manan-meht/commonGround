@@ -224,6 +224,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     await db.from('cases').update({ status: 'ready_for_analysis' }).eq('id', caseId)
 
-    return NextResponse.json({ error: 'Analysis failed. You can retry.' }, { status: 500 })
+    return NextResponse.json({ error: 'Analysis failed. You can retry.', detail: errorMessage }, { status: 500 })
   }
 }
