@@ -27,7 +27,7 @@ export async function runAnalysis(ctx: MediationContext): Promise<ValidatedShare
     throw new Error('OPENAI_API_KEY is not configured. Cannot run analysis.')
   }
 
-  const client = new OpenAI({ apiKey: OPENAI_API_KEY })
+  const client = new OpenAI({ apiKey: OPENAI_API_KEY, fetch: globalThis.fetch })
   const systemPrompt = buildMediationSystemPrompt()
   const userMessage = buildMediationUserMessage(ctx)
 
