@@ -257,14 +257,7 @@ export function ReportView({
                         <p className="text-label-sm text-outline mt-1 capitalize">Your response: {myResponse}</p>
                       )}
                     </div>
-                    {!myResponse && (
-                      <Link
-                        href={`/case/${caseReference}/agreement`}
-                        className="text-secondary font-label-md underline ml-4 whitespace-nowrap"
-                      >
-                        Respond
-                      </Link>
-                    )}
+                    {/* Respond button hidden until feature is ready */}
                   </div>
                 )
               })}
@@ -306,15 +299,7 @@ export function ReportView({
             <span className="material-symbols-outlined text-xl">rate_review</span>
             Feedback
           </Link>
-          {agreements.length > 0 && (
-            <Link
-              href={`/case/${caseReference}/agreement`}
-              className="flex-1 md:flex-none md:min-w-[220px] bg-primary text-white py-3 px-6 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95"
-            >
-              <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>assignment_turned_in</span>
-              Respond to agreements
-            </Link>
-          )}
+          {/* Respond to agreements button hidden until feature is ready */}
         </div>
       </div>
     </>
