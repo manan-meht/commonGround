@@ -80,7 +80,7 @@ export async function generateIntakeSummary(
 
 function getDemoResponse(turn: number): string {
   const responses = [
-    "Hello, and welcome. This is a private, confidential space. Nothing you share here will be seen by the other participant directly. To begin, could you describe what happened — focusing on the specific events rather than interpretations?",
+    "Hello, and welcome. This is a private space. Nothing you share here will be seen by the other participant directly. To begin, could you describe what happened — focusing on the specific events rather than interpretations?",
     "Thank you for sharing that. It sounds like there were some moments that felt particularly significant to you. How did those events impact you emotionally and practically?",
     "I appreciate you being so open. When you reflect on the situation, is there anything the other person may have misunderstood about what you were trying to communicate or do?",
     "That's really helpful context. What would you most like to be acknowledged for in this situation, and what outcome are you hoping for from this process?",

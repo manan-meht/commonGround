@@ -63,7 +63,7 @@ export default async function LandingPage() {
               {
                 icon: 'lock',
                 title: '1. Share privately',
-                desc: 'Each person shares their perspective with the AI facilitator in a confidential, pressure-free space.',
+                desc: 'Each person shares their perspective with the AI facilitator in a private, pressure-free space.',
                 bg: 'bg-primary-container/20',
                 color: 'text-primary',
               },
@@ -113,8 +113,8 @@ export default async function LandingPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
             {[
-              { icon: 'encrypted', label: 'Fully Encrypted' },
-              { icon: 'balance', label: 'Algorithmic Neutrality' },
+              { icon: 'encrypted', label: 'Encrypted & Protected' },
+              { icon: 'balance', label: 'Balanced by Design' },
               { icon: 'visibility_off', label: 'No Cross-Access' },
               { icon: 'volunteer_activism', label: 'Non-Adversarial' },
             ].map((item) => (

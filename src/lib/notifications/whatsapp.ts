@@ -95,7 +95,7 @@ export function buildWhatsAppShareUrl(payload: {
   const message = [
     `Hi! ${payload.initiatorName} has invited you to a private, AI-facilitated conversation on Common Ground about: "${payload.topic}".`,
     '',
-    'This is a confidential, neutral process. Your perspective is kept private — you share it directly with the AI, not with them. A shared summary is only generated after both of you have participated.',
+    'This is a private, neutral process. Your perspective is kept private — you share it directly with the AI, not with them. A shared summary is only generated after both of you have participated.',
     '',
     `Join here: ${payload.inviteLink}`,
     '',

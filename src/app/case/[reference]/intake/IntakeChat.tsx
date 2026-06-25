@@ -85,7 +85,7 @@ function SummaryCard({ summary }: { summary: string }) {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: "Hello. I'm here to help you prepare your private perspective. This is a confidential space — nothing you share here will be seen directly by the other participant. To get started, could you describe what happened from your perspective? Take your time.",
+  content: "Hello. I'm here to help you prepare your private perspective. This is a private space — nothing you share here will be seen directly by the other participant. To get started, could you describe what happened from your perspective? Take your time.",
 }
 
 export function IntakeChat({ caseReference, topic, participantName }: Props) {
