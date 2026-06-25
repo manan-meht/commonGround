@@ -362,21 +362,40 @@ function PerspectiveCard({
   const borderColor = color === 'primary' ? 'border-primary/40' : 'border-secondary/40'
   const labelColor = color === 'primary' ? 'text-primary' : 'text-secondary'
 
+  // OpenAI may return a plain string instead of a structured object
+  if (typeof perspective === 'string') {
+    return (
+      <div className={`relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
+        <div className={`flex items-center gap-2 mb-3 ${labelColor}`}>
+          <span className="material-symbols-outlined">person</span>
+          <span className="font-label-sm uppercase tracking-wider">{name}</span>
+        </div>
+        <p className="italic text-on-surface-variant font-body-md">{perspective}</p>
+      </div>
+    )
+  }
+
   return (
     <div className={`relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
       <div className={`flex items-center gap-2 mb-3 ${labelColor}`}>
         <span className="material-symbols-outlined">person</span>
         <span className="font-label-sm uppercase tracking-wider">{name}</span>
       </div>
-      <p className="italic text-on-surface-variant font-body-md mb-3">{perspective.paraphrase}</p>
-      <div className="flex flex-wrap gap-2 mb-3">
-        {perspective.coreFeelings.map((f, i) => (
-          <span key={i} className="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm">{f}</span>
-        ))}
-      </div>
-      <div className="mt-4 pt-4 border-t border-outline-variant/20">
-        <p className={`text-sm font-medium ${labelColor}`}>Core Need: {perspective.coreNeed}</p>
-      </div>
+      {perspective.paraphrase && (
+        <p className="italic text-on-surface-variant font-body-md mb-3">{perspective.paraphrase}</p>
+      )}
+      {toStringArray(perspective.coreFeelings).length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {toStringArray(perspective.coreFeelings).map((f, i) => (
+            <span key={i} className="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm">{f}</span>
+          ))}
+        </div>
+      )}
+      {perspective.coreNeed && (
+        <div className="mt-4 pt-4 border-t border-outline-variant/20">
+          <p className={`text-sm font-medium ${labelColor}`}>Core Need: {perspective.coreNeed}</p>
+        </div>
+      )}
     </div>
   )
 }
