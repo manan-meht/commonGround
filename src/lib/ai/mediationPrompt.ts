@@ -23,12 +23,15 @@ const DisputedInterpretationSchema = z.union([
   z.string(),
 ])
 
-const PerspectiveSummarySchema = z.object({
-  coreFeelings: z.array(z.string()).optional().default([]),
-  mainConcerns: z.array(z.string()).optional().default([]),
-  coreNeed: z.string().optional().default(''),
-  paraphrase: z.string().optional().default(''),
-}).passthrough()
+const PerspectiveSummarySchema = z.union([
+  z.object({
+    coreFeelings: z.array(z.string()).optional().default([]),
+    mainConcerns: z.array(z.string()).optional().default([]),
+    coreNeed: z.string().optional().default(''),
+    paraphrase: z.string().optional().default(''),
+  }).passthrough(),
+  z.string(),
+])
 
 const IntentionVsImpactSchema = z.union([
   z.object({
@@ -59,23 +62,23 @@ const intentionVsImpactField = z.preprocess((val) => {
 export const SharedReportSchema = z.object({
   reportTitle: z.string().min(1),
   neutralOverview: z.string(),
-  agreedFacts: z.array(z.string()),
-  disputedInterpretations: z.array(DisputedInterpretationSchema),
+  agreedFacts: z.union([z.array(z.string()), z.string()]),
+  disputedInterpretations: z.union([z.array(DisputedInterpretationSchema), z.string()]),
   initiatorPerspective: PerspectiveSummarySchema,
   recipientPerspective: PerspectiveSummarySchema,
-  pointsOfAgreement: z.array(z.string()),
-  sharedGoals: z.array(z.string()).optional().default([]),
-  misunderstandings: z.array(z.string()),
+  pointsOfAgreement: z.union([z.array(z.string()), z.string()]),
+  sharedGoals: z.union([z.array(z.string()), z.string()]).optional().default([]),
+  misunderstandings: z.union([z.array(z.string()), z.string()]),
   intentionVsImpact: intentionVsImpactField,
-  initiatorNeeds: z.array(z.string()),
-  recipientNeeds: z.array(z.string()),
-  initiatorAccountability: z.array(z.string()),
-  recipientAccountability: z.array(z.string()),
-  recommendedNextSteps: z.array(NextStepSchema),
+  initiatorNeeds: z.union([z.array(z.string()), z.string()]),
+  recipientNeeds: z.union([z.array(z.string()), z.string()]),
+  initiatorAccountability: z.union([z.array(z.string()), z.string()]),
+  recipientAccountability: z.union([z.array(z.string()), z.string()]),
+  recommendedNextSteps: z.union([z.array(NextStepSchema), z.string()]),
   suggestedOpeningScript: z.string(),
-  conversationGuidelines: z.array(z.string()),
-  possibleAgreements: z.array(z.string()),
-  unresolvedIssues: z.array(z.string()),
+  conversationGuidelines: z.union([z.array(z.string()), z.string()]),
+  possibleAgreements: z.union([z.array(z.string()), z.string()]),
+  unresolvedIssues: z.union([z.array(z.string()), z.string()]),
   professionalSupportSuggestion: z.string().nullable(),
   safetyCategory: z.enum([
     'ordinary_conflict',
