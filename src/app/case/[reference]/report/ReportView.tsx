@@ -14,6 +14,7 @@ interface Props {
   initiatorName: string
   recipientName: string
   generatedAt: string
+  isAdminView?: boolean
 }
 
 const SAFETY_SENSITIVE = [
@@ -32,6 +33,7 @@ export function ReportView({
   topic,
   initiatorName,
   recipientName,
+  isAdminView = false,
 }: Props) {
   if (SAFETY_SENSITIVE.includes(report.safetyCategory)) {
     return <SafetyScreen report={report} />
