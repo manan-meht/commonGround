@@ -17,6 +17,20 @@ interface Props {
   isAdminView?: boolean
 }
 
+// OpenAI sometimes returns strings instead of arrays or objects — normalise defensively
+function toArray<T>(val: T | T[] | string | undefined | null): T[] {
+  if (!val) return []
+  if (Array.isArray(val)) return val
+  if (typeof val === 'string') return [val as unknown as T]
+  return [val]
+}
+
+function toStringArray(val: string | string[] | undefined | null): string[] {
+  if (!val) return []
+  if (Array.isArray(val)) return val
+  return [val]
+}
+
 const SAFETY_SENSITIVE = [
   'possible_coercion_or_abuse',
   'possible_self_harm_or_violence',
@@ -103,22 +117,28 @@ export function ReportView({
         )}
 
         {/* Disputed interpretations */}
-        {report.disputedInterpretations.length > 0 && (
+        {toArray(report.disputedInterpretations).length > 0 && (
           <Section icon="error" title="Disputed Interpretations" iconFill>
             <div className="bg-error-container/20 border border-error/10 p-6 rounded-xl space-y-4">
-              {report.disputedInterpretations.map((d, i) => (
+              {toArray(report.disputedInterpretations).map((d, i) => (
                 <div key={i} className="border-b border-error/10 last:border-0 pb-4 last:pb-0">
-                  <p className="font-label-md text-on-surface font-bold mb-2">{d.event}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="font-label-sm text-primary uppercase mb-1">Your view</p>
-                      <p className="font-body-md text-on-surface-variant">{d.initiatorView}</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="font-label-sm text-secondary uppercase mb-1">{theirName}&apos;s view</p>
-                      <p className="font-body-md text-on-surface-variant">{d.recipientView}</p>
-                    </div>
-                  </div>
+                  {typeof d === 'string' ? (
+                    <p className="font-body-md text-on-surface-variant">{d}</p>
+                  ) : (
+                    <>
+                      <p className="font-label-md text-on-surface font-bold mb-2">{d.event}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="bg-white p-3 rounded-lg">
+                          <p className="font-label-sm text-primary uppercase mb-1">Your view</p>
+                          <p className="font-body-md text-on-surface-variant">{d.initiatorView}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg">
+                          <p className="font-label-sm text-secondary uppercase mb-1">{theirName}&apos;s view</p>
+                          <p className="font-body-md text-on-surface-variant">{d.recipientView}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -126,10 +146,10 @@ export function ReportView({
         )}
 
         {/* Points of agreement */}
-        {report.pointsOfAgreement.length > 0 && (
+        {toStringArray(report.pointsOfAgreement).length > 0 && (
           <Section icon="join_inner" title="Points of Agreement">
             <ul className="space-y-2">
-              {report.pointsOfAgreement.map((p, i) => (
+              {toStringArray(report.pointsOfAgreement).map((p, i) => (
                 <li key={i} className="flex gap-3 p-3 bg-primary-container/10 rounded-lg">
                   <span className="material-symbols-outlined text-primary text-sm mt-0.5">check</span>
                   <p className="font-body-md">{p}</p>
@@ -140,10 +160,10 @@ export function ReportView({
         )}
 
         {/* Shared goals */}
-        {report.sharedGoals.length > 0 && (
+        {toStringArray(report.sharedGoals).length > 0 && (
           <Section icon="track_changes" title="Shared Goals">
             <ul className="space-y-2">
-              {report.sharedGoals.map((g, i) => (
+              {toStringArray(report.sharedGoals).map((g, i) => (
                 <li key={i} className="font-body-md text-on-surface-variant border-l-2 border-secondary pl-4 py-1">{g}</li>
               ))}
             </ul>
@@ -151,22 +171,28 @@ export function ReportView({
         )}
 
         {/* Intention vs impact */}
-        {report.intentionVsImpact.length > 0 && (
+        {toArray(report.intentionVsImpact).length > 0 && (
           <Section icon="compare_arrows" title="Intention vs Impact">
             <div className="space-y-4">
-              {report.intentionVsImpact.map((item, i) => (
+              {toArray(report.intentionVsImpact).map((item, i) => (
                 <div key={i} className="bg-white p-4 rounded-xl shadow-sm">
-                  <p className="font-label-sm text-outline uppercase mb-2">{item.actor === role ? 'Your action' : `${theirName}'s action`}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-label-md text-primary font-bold mb-1">Intended</p>
-                      <p className="font-body-md text-on-surface-variant">{item.intendedMessage}</p>
-                    </div>
-                    <div>
-                      <p className="font-label-md text-error font-bold mb-1">Perceived impact</p>
-                      <p className="font-body-md text-on-surface-variant">{item.perceivedImpact}</p>
-                    </div>
-                  </div>
+                  {typeof item === 'string' ? (
+                    <p className="font-body-md text-on-surface-variant">{item}</p>
+                  ) : (
+                    <>
+                      <p className="font-label-sm text-outline uppercase mb-2">{item.actor === role ? 'Your action' : `${theirName}'s action`}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="font-label-md text-primary font-bold mb-1">Intended</p>
+                          <p className="font-body-md text-on-surface-variant">{item.intendedMessage}</p>
+                        </div>
+                        <div>
+                          <p className="font-label-md text-error font-bold mb-1">Perceived impact</p>
+                          <p className="font-body-md text-on-surface-variant">{item.perceivedImpact}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -175,28 +201,34 @@ export function ReportView({
 
         {/* What each person needs */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
-          <NeedsCard title="What you need acknowledged" needs={report.initiatorNeeds} color="primary" />
-          <NeedsCard title={`What ${theirName} needs acknowledged`} needs={report.recipientNeeds} color="secondary" />
+          <NeedsCard title="What you need acknowledged" needs={toStringArray(report.initiatorNeeds)} color="primary" />
+          <NeedsCard title={`What ${theirName} needs acknowledged`} needs={toStringArray(report.recipientNeeds)} color="secondary" />
         </section>
 
         {/* Accountability */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
-          <AccountabilityCard title="Your possible actions" items={report.initiatorAccountability} />
-          <AccountabilityCard title={`${theirName}'s possible actions`} items={report.recipientAccountability} />
+          <AccountabilityCard title="Your possible actions" items={toStringArray(report.initiatorAccountability)} />
+          <AccountabilityCard title={`${theirName}'s possible actions`} items={toStringArray(report.recipientAccountability)} />
         </section>
 
         {/* Next steps */}
         <Section icon="fact_check" title="Recommended Next Steps" iconFill>
           <div className="space-y-3">
-            {report.recommendedNextSteps.map((step, i) => (
+            {toArray(report.recommendedNextSteps).map((step, i) => (
               <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-sm">
-                <span className={`material-symbols-outlined text-sm mt-0.5 ${step.owner === 'initiator' ? 'text-primary' : step.owner === 'recipient' ? 'text-secondary' : 'text-tertiary'}`}>
-                  {step.owner === 'both' ? 'group' : 'person'}
-                </span>
-                <div>
-                  <p className="font-body-md text-on-surface">{step.action}</p>
-                  {step.timeframe && <p className="text-label-sm text-outline mt-1">{step.timeframe}</p>}
-                </div>
+                {typeof step === 'string' ? (
+                  <p className="font-body-md text-on-surface">{step}</p>
+                ) : (
+                  <>
+                    <span className={`material-symbols-outlined text-sm mt-0.5 ${step.owner === 'initiator' ? 'text-primary' : step.owner === 'recipient' ? 'text-secondary' : 'text-tertiary'}`}>
+                      {step.owner === 'both' ? 'group' : 'person'}
+                    </span>
+                    <div>
+                      <p className="font-body-md text-on-surface">{step.action}</p>
+                      {step.timeframe && <p className="text-label-sm text-outline mt-1">{step.timeframe}</p>}
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
