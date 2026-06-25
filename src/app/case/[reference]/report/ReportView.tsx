@@ -363,17 +363,13 @@ function PerspectiveCard({
   const labelColor = color === 'primary' ? 'text-primary' : 'text-secondary'
 
   // OpenAI may return a plain string instead of a structured object
-  if (typeof perspective === 'string') {
-    return (
-      <div className={`relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
-        <div className={`flex items-center gap-2 mb-3 ${labelColor}`}>
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label-sm uppercase tracking-wider">{name}</span>
-        </div>
-        <p className="italic text-on-surface-variant font-body-md">{perspective}</p>
-      </div>
-    )
-  }
+  // Normalise — OpenAI uses inconsistent field names
+  const p = typeof perspective === 'string' ? { feelings: perspective } : perspective as unknown as Record<string, unknown>
+  const paraphrase = (p.paraphrase || p.feelings || p.summary || '') as string
+  const feelings = toStringArray((p.coreFeelings ?? p.feelings_list ?? []) as string | string[])
+  const coreNeed = (p.coreNeed || p.need || '') as string
+  const interpretation = (p.interpretation || p.view || '') as string
+  const contribution = (p.acknowledgedContribution || p.contribution || '') as string
 
   return (
     <div className={`relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
@@ -381,19 +377,23 @@ function PerspectiveCard({
         <span className="material-symbols-outlined">person</span>
         <span className="font-label-sm uppercase tracking-wider">{name}</span>
       </div>
-      {perspective.paraphrase && (
-        <p className="italic text-on-surface-variant font-body-md mb-3">{perspective.paraphrase}</p>
-      )}
-      {toStringArray(perspective.coreFeelings).length > 0 && (
+      {paraphrase && <p className="italic text-on-surface-variant font-body-md mb-3">{paraphrase}</p>}
+      {feelings.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
-          {toStringArray(perspective.coreFeelings).map((f, i) => (
+          {feelings.map((f, i) => (
             <span key={i} className="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm">{f}</span>
           ))}
         </div>
       )}
-      {perspective.coreNeed && (
+      {interpretation && (
+        <p className="font-body-md text-on-surface-variant mb-2"><span className={`font-medium ${labelColor}`}>Interpretation: </span>{interpretation}</p>
+      )}
+      {contribution && (
+        <p className="font-body-md text-on-surface-variant mb-2"><span className="font-medium text-outline">Acknowledged: </span>{contribution}</p>
+      )}
+      {coreNeed && (
         <div className="mt-4 pt-4 border-t border-outline-variant/20">
-          <p className={`text-sm font-medium ${labelColor}`}>Core Need: {perspective.coreNeed}</p>
+          <p className={`text-sm font-medium ${labelColor}`}>Core Need: {coreNeed}</p>
         </div>
       )}
     </div>
