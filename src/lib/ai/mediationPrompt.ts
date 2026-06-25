@@ -18,30 +18,43 @@ export const SAFETY_CATEGORIES = [
 ] as const satisfies ReadonlyArray<SafetyCategory>
 
 // ─── Zod schema for the structured report ─────────────────────────────────────
-const DisputedInterpretationSchema = z.object({
-  event: z.string(),
-  initiatorView: z.string(),
-  recipientView: z.string(),
-})
+const DisputedInterpretationSchema = z.union([
+  z.object({ event: z.string(), initiatorView: z.string(), recipientView: z.string() }),
+  z.string(),
+])
 
 const PerspectiveSummarySchema = z.object({
-  coreFeelings: z.array(z.string()),
-  mainConcerns: z.array(z.string()),
-  coreNeed: z.string(),
-  paraphrase: z.string(),
-})
+  coreFeelings: z.array(z.string()).optional().default([]),
+  mainConcerns: z.array(z.string()).optional().default([]),
+  coreNeed: z.string().optional().default(''),
+  paraphrase: z.string().optional().default(''),
+}).passthrough()
 
-const IntentionVsImpactSchema = z.object({
-  actor: z.enum(['initiator', 'recipient']),
-  intendedMessage: z.string(),
-  perceivedImpact: z.string(),
-})
+const IntentionVsImpactSchema = z.union([
+  z.object({
+    actor: z.enum(['initiator', 'recipient']).optional(),
+    intendedMessage: z.string(),
+    perceivedImpact: z.string(),
+  }),
+  z.string(),
+])
 
-const NextStepSchema = z.object({
-  action: z.string(),
-  owner: z.enum(['initiator', 'recipient', 'both']),
-  timeframe: z.string().nullable(),
-})
+const NextStepSchema = z.union([
+  z.object({
+    action: z.string(),
+    owner: z.enum(['initiator', 'recipient', 'both']).optional(),
+    timeframe: z.string().nullable().optional(),
+  }),
+  z.string(),
+])
+
+// intentionVsImpact may come back as an array or as an object keyed by index
+const intentionVsImpactField = z.preprocess((val) => {
+  if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+    return Object.values(val as Record<string, unknown>)
+  }
+  return val
+}, z.array(IntentionVsImpactSchema))
 
 export const SharedReportSchema = z.object({
   reportTitle: z.string().min(1),
@@ -51,9 +64,9 @@ export const SharedReportSchema = z.object({
   initiatorPerspective: PerspectiveSummarySchema,
   recipientPerspective: PerspectiveSummarySchema,
   pointsOfAgreement: z.array(z.string()),
-  sharedGoals: z.array(z.string()),
+  sharedGoals: z.array(z.string()).optional().default([]),
   misunderstandings: z.array(z.string()),
-  intentionVsImpact: z.array(IntentionVsImpactSchema),
+  intentionVsImpact: intentionVsImpactField,
   initiatorNeeds: z.array(z.string()),
   recipientNeeds: z.array(z.string()),
   initiatorAccountability: z.array(z.string()),
