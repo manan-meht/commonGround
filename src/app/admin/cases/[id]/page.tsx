@@ -50,6 +50,13 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <span className="text-label-sm text-on-surface-variant">— {caseRow.status}</span>
       </div>
 
+      {analysis?.structured_result && (
+        <details className="mx-4 my-2 border border-outline-variant rounded-lg">
+          <summary className="px-4 py-2 text-label-sm text-on-surface-variant cursor-pointer">Raw JSON (debug)</summary>
+          <pre className="p-4 text-[11px] overflow-x-auto bg-surface-container-low">{JSON.stringify(analysis.structured_result, null, 2)}</pre>
+        </details>
+      )}
+
       {analysis?.structured_result ? (
         <ReportView
           report={analysis.structured_result as SharedReport}

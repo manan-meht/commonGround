@@ -1,17 +1,19 @@
 import Link from 'next/link'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
+import { getUser } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Common Ground — Understand each other before deciding what comes next',
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const isDemoMode = process.env['DEMO_MODE'] === 'true'
+  const user = await getUser()
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader showExit={false} />
+      <SiteHeader showExit={false} userEmail={user?.email} />
 
       {isDemoMode && (
         <div className="bg-secondary-container text-on-secondary-container text-center py-2 text-label-sm font-label-sm tracking-widest uppercase">
@@ -34,7 +36,7 @@ export default function LandingPage() {
               designed for safety and clarity.
             </p>
             <Link
-              href="/start"
+              href={user ? '/start' : '/auth?next=/start'}
               className="inline-block w-full sm:w-auto bg-primary text-on-primary px-8 py-4 rounded-xl font-headline-md shadow-md active:opacity-80 transition-opacity"
             >
               Start a conversation

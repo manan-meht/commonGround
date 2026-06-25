@@ -1,33 +1,62 @@
 'use client'
 
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface SiteHeaderProps {
   showExit?: boolean
   exitLabel?: string
   exitHref?: string
+  userEmail?: string | null
 }
 
 export function SiteHeader({
   showExit = true,
   exitLabel = 'Exit',
   exitHref = '/',
+  userEmail,
 }: SiteHeaderProps) {
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
+
   return (
     <header className="bg-surface sticky top-0 z-50 shadow-sm">
       <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
-        <Link href="/" className="font-headline-md text-headline-md font-bold text-primary">
+        <Link href={userEmail ? '/dashboard' : '/'} className="font-headline-md text-headline-md font-bold text-primary">
           Common Ground
         </Link>
-        {showExit && (
-          <Link
-            href={exitHref}
-            className="text-on-surface-variant font-label-md flex items-center gap-1 hover:text-secondary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-            {exitLabel}
-          </Link>
-        )}
+        <div className="flex items-center gap-4">
+          {userEmail ? (
+            <>
+              <Link href="/dashboard" className="text-on-surface-variant font-label-md hover:text-secondary transition-colors hidden md:flex items-center gap-1">
+                <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                My cases
+              </Link>
+              <button
+                onClick={() => void signOut()}
+                className="text-on-surface-variant font-label-md flex items-center gap-1 hover:text-secondary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">logout</span>
+                <span className="hidden md:inline">Sign out</span>
+              </button>
+            </>
+          ) : showExit ? (
+            <Link
+              href={exitHref}
+              className="text-on-surface-variant font-label-md flex items-center gap-1 hover:text-secondary transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+              {exitLabel}
+            </Link>
+          ) : null}
+        </div>
       </div>
     </header>
   )

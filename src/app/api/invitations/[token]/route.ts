@@ -3,6 +3,7 @@ import { getServiceClient } from '@/lib/db/client'
 import { hashToken, isTokenExpired } from '@/lib/tokens'
 import { setSessionCookie } from '@/lib/auth/session'
 import { AcceptInvitationSchema } from '@/lib/validation/schemas'
+import { createClient } from '@/lib/supabase/server'
 
 interface RouteParams {
   params: Promise<{ token: string }>
@@ -47,6 +48,10 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function POST(req: NextRequest, { params }: RouteParams) {
   const { token } = await params
   if (!token) return NextResponse.json({ error: 'Token is required.' }, { status: 400 })
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
 
   let body: unknown
   try {
@@ -116,6 +121,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         access_token_hash: recipientTokenHash,
         invitation_accepted_at: new Date().toISOString(),
         consented_at: new Date().toISOString(),
+        user_id: user.id,
       })
       .select('id')
       .single()

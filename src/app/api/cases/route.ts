@@ -4,6 +4,7 @@ import { getServiceClient } from '@/lib/db/client'
 import { generateSecureToken, hashToken, generatePublicReference, inviteExpiresAt } from '@/lib/tokens'
 import { setSessionCookie } from '@/lib/auth/session'
 import { isEmail } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -31,6 +32,10 @@ export async function POST(req: NextRequest) {
   const initiatorPhone = isEmail(initiatorContact) ? null : initiatorContact
 
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
+
     const db = getServiceClient()
     const publicReference = generatePublicReference()
 
@@ -56,6 +61,7 @@ export async function POST(req: NextRequest) {
         consent_version: consentVersion,
         invitation_token_hash: invitationTokenHash,
         invite_expires_at: expiresAt.toISOString(),
+        user_id: user.id,
       })
       .select('id, public_reference')
       .single()
@@ -76,6 +82,7 @@ export async function POST(req: NextRequest) {
         phone: initiatorPhone,
         access_token_hash: initiatorTokenHash,
         consented_at: new Date().toISOString(),
+        user_id: user.id,
       })
       .select('id')
       .single()
@@ -99,6 +106,7 @@ export async function POST(req: NextRequest) {
       caseId: caseRow.id,
       caseReference: caseRow.public_reference,
       role: 'initiator',
+      inviteToken: invitationToken,
     })
 
     const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
