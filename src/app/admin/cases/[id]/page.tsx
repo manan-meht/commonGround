@@ -5,6 +5,7 @@ import { ReportView } from '@/app/case/[reference]/report/ReportView'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import type { SharedReport, DbAgreement } from '@/lib/db/types'
 import Link from 'next/link'
+import { RegenerateInviteButton } from './RegenerateInviteButton'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -49,6 +50,15 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <span className="text-label-sm text-on-surface-variant font-mono">{caseRow.public_reference}</span>
         <span className="text-label-sm text-on-surface-variant">— {caseRow.status}</span>
       </div>
+
+      {['awaiting_initiator', 'awaiting_recipient'].includes(caseRow.status) && (
+        <div className="mx-4 mt-3 mb-1 max-w-sm">
+          <p className="text-label-sm text-on-surface-variant mb-1">
+            Invite link for <strong>{caseRow.recipient_name}</strong>
+          </p>
+          <RegenerateInviteButton caseId={caseRow.id} />
+        </div>
+      )}
 
       <div className="mx-4 my-2 flex gap-4 flex-wrap">
         <div className="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 text-label-sm">
