@@ -2,18 +2,21 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export function StartConversationForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [serverError, setServerError] = useState('')
+  const [noCredits, setNoCredits] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setErrors({})
     setServerError('')
+    setNoCredits(false)
 
     const fd = new FormData(e.currentTarget)
     const body = {
@@ -34,8 +37,13 @@ export function StartConversationForm() {
       const data = await res.json() as { caseReference?: string; inviteLink?: string; errors?: Record<string, string[]>; error?: string }
 
       if (!res.ok) {
-        if (data.errors) setErrors(data.errors)
-        else setServerError(data.error ?? 'An error occurred. Please try again.')
+        if (res.status === 402 || data.error === 'no_credits') {
+          setNoCredits(true)
+        } else if (data.errors) {
+          setErrors(data.errors)
+        } else {
+          setServerError(data.error ?? 'An error occurred. Please try again.')
+        }
         return
       }
 
@@ -53,6 +61,24 @@ export function StartConversationForm() {
   return (
     <div className="px-margin-mobile pb-stack-lg max-w-xl mx-auto">
       <form className="space-y-gutter" onSubmit={handleSubmit} noValidate>
+
+        {noCredits && (
+          <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex flex-col gap-3" role="alert">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+              <div>
+                <p className="font-medium text-on-surface">You are out of credits.</p>
+                <p className="text-label-sm text-on-surface-variant">Purchase a plan to start more conversations.</p>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-label-md text-center block"
+            >
+              Buy credits →
+            </Link>
+          </div>
+        )}
 
         {serverError && (
           <div className="bg-error-container text-on-error-container p-4 rounded-xl font-body-md" role="alert">
