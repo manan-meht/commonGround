@@ -44,17 +44,26 @@ export async function runAnalysis(ctx: MediationContext): Promise<AnalysisResult
       { role: 'user', content: userMessage },
     ],
     response_format: { type: 'json_object' },
-    max_tokens: 4000,
+    max_tokens: 8000,
     temperature: 0.4,
   })
+
+  const finishReason = response.choices[0]?.finish_reason
+  if (finishReason === 'length') {
+    throw new Error('OpenAI response was cut off (max_tokens reached). The submissions may be too long.')
+  }
 
   const rawContent = response.choices[0]?.message?.content
   if (!rawContent) throw new Error('Empty response from OpenAI analysis.')
 
+  // Strip markdown code fences if OpenAI wrapped the JSON despite instructions
+  const stripped = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+
   let parsed: unknown
   try {
-    parsed = JSON.parse(rawContent)
+    parsed = JSON.parse(stripped)
   } catch {
+    console.error('[analysis] Raw OpenAI output (first 500 chars):', rawContent.slice(0, 500))
     throw new Error('OpenAI returned invalid JSON in analysis response.')
   }
 
