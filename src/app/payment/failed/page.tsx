@@ -13,7 +13,7 @@ function FailedContent() {
         <Link href="/pricing" className="flex items-center gap-1 text-on-surface-variant">
           <span className="material-symbols-outlined text-[20px]">arrow_back</span>
         </Link>
-        <span className="font-headline-md text-on-surface">Common Ground</span>
+        <span className="font-headline-md text-on-surface">Urushi</span>
         <span className="material-symbols-outlined text-on-surface-variant text-[20px]">lock</span>
       </header>
 
@@ -63,7 +63,7 @@ function FailedContent() {
         </Link>
         <p className="text-label-sm text-on-surface-variant">
           Need help?{' '}
-          <a href="mailto:support@commonground.com" className="text-primary underline">Contact support</a>
+          <a href="mailto:support@urushi.com" className="text-primary underline">Contact support</a>
         </p>
       </main>
 

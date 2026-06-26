@@ -10,7 +10,7 @@ const CATEGORY_MESSAGES: Record<string, { title: string; body: string }> = {
   },
   possible_self_harm_or_violence: {
     title: 'We are concerned about your safety',
-    body: 'This report identified content that may indicate risk of self-harm or physical violence. Please reach out to a crisis support service or emergency services if you or someone else is in immediate danger. Common Ground cannot assess immediate risk or provide crisis support.',
+    body: 'This report identified content that may indicate risk of self-harm or physical violence. Please reach out to a crisis support service or emergency services if you or someone else is in immediate danger. Urushi cannot assess immediate risk or provide crisis support.',
   },
   possible_child_safety_issue: {
     title: 'Child safety concern identified',
@@ -80,7 +80,7 @@ export function SafetyScreen({ report }: { report: SharedReport }) {
       </div>
 
       <p className="text-label-sm text-on-surface-variant mt-8 max-w-md opacity-70">
-        Common Ground is an AI communication tool. It cannot verify facts, assess danger, or replace
+        Urushi is an AI communication tool. It cannot verify facts, assess danger, or replace
         qualified professional support.
       </p>
     </main>

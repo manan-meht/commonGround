@@ -6,9 +6,9 @@
 import type { NotificationPayload, NotificationProvider, NotificationResult } from './interface'
 
 const SUBJECTS: Record<string, string> = {
-  recipient_invitation: 'You\'ve been invited to a facilitated conversation — Common Ground',
-  intake_reminder: 'Reminder: Your perspective is still needed — Common Ground',
-  report_ready: 'Your shared resolution report is ready — Common Ground',
+  recipient_invitation: 'You\'ve been invited to a facilitated conversation — Urushi',
+  intake_reminder: 'Reminder: Your perspective is still needed — Urushi',
+  report_ready: 'Your shared resolution report is ready — Urushi',
 }
 
 export class EmailProvider implements NotificationProvider {
@@ -29,7 +29,7 @@ export class EmailProvider implements NotificationProvider {
       return { success: false, error: 'Email provider not configured.' }
     }
 
-    const subject = SUBJECTS[payload.template] ?? 'Common Ground update'
+    const subject = SUBJECTS[payload.template] ?? 'Urushi update'
     const html = buildEmailHtml(payload)
 
     try {
@@ -67,26 +67,26 @@ function buildEmailHtml(payload: NotificationPayload): string {
   const templates: Record<string, string> = {
     recipient_invitation: `
       <p>Hi ${payload.recipientName},</p>
-      <p><strong>${payload.initiatorName}</strong> has invited you to a private, AI-facilitated conversation through Common Ground.</p>
+      <p><strong>${payload.initiatorName}</strong> has invited you to a private, AI-facilitated conversation through Urushi.</p>
       <p><strong>Topic:</strong> ${payload.topic}</p>
       <p>Your perspective is kept completely private — the AI will not share your responses directly with ${payload.initiatorName}. A neutral shared report is only created once both of you have participated.</p>
       <p><a href="${payload.link}" style="background:#4a654e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">View invitation</a></p>
-      <p style="color:#737972;font-size:12px;">This link is personal to you and expires in 7 days. Common Ground is an AI communication tool, not a substitute for legal or professional advice.</p>
+      <p style="color:#737972;font-size:12px;">This link is personal to you and expires in 7 days. Urushi is an AI communication tool, not a substitute for legal or professional advice.</p>
     `,
     intake_reminder: `
       <p>Hi ${payload.recipientName},</p>
-      <p>A reminder that your perspective is still needed in your Common Ground conversation about: <strong>${payload.topic}</strong>.</p>
+      <p>A reminder that your perspective is still needed in your Urushi conversation about: <strong>${payload.topic}</strong>.</p>
       <p><a href="${payload.link}" style="background:#4a654e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">Share my perspective</a></p>
     `,
     report_ready: `
       <p>Hi ${payload.recipientName},</p>
       <p>Your shared resolution report for <strong>${payload.topic}</strong> is ready. Both participants have submitted their perspectives and the AI has generated a neutral synthesis.</p>
       <p><a href="${payload.link}" style="background:#4a654e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">View the report</a></p>
-      <p style="color:#737972;font-size:12px;">Common Ground is an AI communication tool, not a substitute for legal, therapeutic, or professional advice.</p>
+      <p style="color:#737972;font-size:12px;">Urushi is an AI communication tool, not a substitute for legal, therapeutic, or professional advice.</p>
     `,
   }
 
-  const body = templates[payload.template] ?? `<p>Update on your Common Ground conversation. <a href="${payload.link}">Click here to view.</a></p>`
+  const body = templates[payload.template] ?? `<p>Update on your Urushi conversation. <a href="${payload.link}">Click here to view.</a></p>`
 
   return `<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;color:#1a1c1b;background:#faf9f7;padding:32px;">${body}</body></html>`
 }

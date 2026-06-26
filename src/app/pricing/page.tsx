@@ -6,7 +6,7 @@ import { PricingClient } from './PricingClient'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 
 export const metadata: Metadata = {
-  title: 'Plans — Common Ground',
+  title: 'Plans — Urushi',
   robots: { index: false },
 }
 

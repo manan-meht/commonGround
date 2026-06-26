@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test'
  * Uses mocked OpenAI responses (demo mode).
  */
 
-test.describe('Common Ground primary journey', () => {
+test.describe('Urushi primary journey', () => {
   let inviteLink = ''
 
   test('1. Landing page loads', async ({ page }) => {

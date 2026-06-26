@@ -1,7 +1,7 @@
 import type { ValidatedSharedReport } from './mediationPrompt'
 
 export const MOCK_REPORT: ValidatedSharedReport = {
-  reportTitle: 'Finding Common Ground: A Shared Perspective Report',
+  reportTitle: 'Finding Urushi: A Shared Perspective Report',
   neutralOverview:
     'Both participants describe a situation where differing expectations about communication and decision-making created a growing sense of frustration and disconnection. While the specific facts are seen differently, both share a genuine desire for a better working relationship and a fair resolution.',
   agreedFacts: [

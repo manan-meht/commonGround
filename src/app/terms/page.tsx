@@ -10,7 +10,7 @@ export default function TermsPage() {
         <div className="bg-error-container/20 border border-error/20 rounded-xl p-6 mb-8">
           <h2 className="font-label-md font-bold text-on-error-container mb-2">Important Limitations</h2>
           <ul className="space-y-2 font-body-md text-on-error-container/80">
-            <li>• Common Ground is an AI communication facilitation tool, <strong>not</strong> a therapy service, mediation service, or legal service.</li>
+            <li>• Urushi is an AI communication facilitation tool, <strong>not</strong> a therapy service, mediation service, or legal service.</li>
             <li>• It is not a substitute for professional counselling, legal advice, or licensed mediation.</li>
             <li>• The AI cannot verify facts, assess credibility, or make binding decisions.</li>
             <li>• This is a prototype. Do not use it for situations involving serious legal risk or immediate safety concerns.</li>
@@ -20,7 +20,7 @@ export default function TermsPage() {
         <div className="space-y-6 font-body-md text-on-surface-variant">
           <section>
             <h2 className="font-headline-md text-on-surface mb-3">Prototype status</h2>
-            <p>Common Ground is an early-stage prototype. Features may change, data may be lost, and the service may be interrupted without notice.</p>
+            <p>Urushi is an early-stage prototype. Features may change, data may be lost, and the service may be interrupted without notice.</p>
           </section>
 
           <section>

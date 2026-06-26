@@ -33,7 +33,7 @@ function SuccessContent({ product }: { product: string }) {
         <Link href="/dashboard" className="flex items-center gap-1 text-on-surface-variant">
           <span className="material-symbols-outlined text-[20px]">arrow_back</span>
         </Link>
-        <span className="ml-3 font-headline-md text-on-surface">Common Ground</span>
+        <span className="ml-3 font-headline-md text-on-surface">Urushi</span>
       </header>
 
       <main className="flex-grow flex flex-col items-center px-margin-mobile py-stack-lg text-center">

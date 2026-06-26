@@ -10,7 +10,7 @@ export default function PrivacyPage() {
         <div className="prose prose-neutral max-w-none space-y-6 font-body-md text-on-surface-variant">
           <section>
             <h2 className="font-headline-md text-on-surface mb-3">What we collect</h2>
-            <p>Common Ground collects only what is necessary to run the facilitation process: your name, contact information (email or phone), and the private messages you send during the intake process.</p>
+            <p>Urushi collects only what is necessary to run the facilitation process: your name, contact information (email or phone), and the private messages you send during the intake process.</p>
           </section>
 
           <section>

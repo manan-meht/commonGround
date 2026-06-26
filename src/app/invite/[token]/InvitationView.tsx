@@ -160,7 +160,7 @@ export function InvitationView({ token }: { token: string }) {
             <div>
               <p className="font-label-sm text-on-error-container font-bold uppercase mb-1">Safety Notice</p>
               <p className="font-body-md text-[14px] text-on-error-container/80 leading-tight">
-                Common Ground is an AI communication tool, not a substitute for legal advice or
+                Urushi is an AI communication tool, not a substitute for legal advice or
                 professional support. If you feel unsafe, please contact emergency services immediately.
                 You can learn more on our <a href="/safety" className="underline">safety page</a>.
               </p>

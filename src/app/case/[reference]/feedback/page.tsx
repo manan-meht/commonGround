@@ -5,7 +5,7 @@ import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import { FeedbackForm } from './FeedbackForm'
 
 export const metadata: Metadata = {
-  title: 'Report Feedback — Common Ground',
+  title: 'Report Feedback — Urushi',
   robots: { index: false },
 }
 

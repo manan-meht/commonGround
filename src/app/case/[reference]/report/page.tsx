@@ -7,7 +7,7 @@ import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import type { SharedReport, DbAgreement } from '@/lib/db/types'
 
 export const metadata: Metadata = {
-  title: 'Shared Report — Common Ground',
+  title: 'Shared Report — Urushi',
   robots: { index: false, follow: false },
 }
 

@@ -3,14 +3,14 @@ import { AuthForm } from './AuthForm'
 import { SiteFooter } from '@/components/SiteHeader'
 import Link from 'next/link'
 
-export const metadata = { title: 'Sign In — Common Ground' }
+export const metadata = { title: 'Sign In — Urushi' }
 
 export default function AuthPage() {
   return (
     <div className="flex flex-col min-h-screen bg-surface">
       {/* Minimal header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/30">
-        <Link href="/" className="font-headline-md text-primary font-semibold">Common Ground</Link>
+        <Link href="/" className="font-headline-md text-primary font-semibold">Urushi</Link>
         <Link href="/" className="flex items-center gap-1 text-label-md text-on-surface-variant hover:text-on-surface transition-colors">
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Exit

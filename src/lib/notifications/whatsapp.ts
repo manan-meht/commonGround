@@ -93,13 +93,13 @@ export function buildWhatsAppShareUrl(payload: {
   inviteLink: string
 }): string {
   const message = [
-    `Hi! ${payload.initiatorName} has invited you to a private, AI-facilitated conversation on Common Ground about: "${payload.topic}".`,
+    `Hi! ${payload.initiatorName} has invited you to a private, AI-facilitated conversation on Urushi about: "${payload.topic}".`,
     '',
     'This is a private, neutral process. Your perspective is kept private — you share it directly with the AI, not with them. A shared summary is only generated after both of you have participated.',
     '',
     `Join here: ${payload.inviteLink}`,
     '',
-    'Common Ground is an AI communication tool, not a substitute for legal or professional advice.',
+    'Urushi is an AI communication tool, not a substitute for legal or professional advice.',
   ].join('\n')
 
   const phone = payload.recipientPhone.replace(/\D/g, '')
