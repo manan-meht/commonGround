@@ -19,7 +19,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
 
   const { data: caseRow } = await db
     .from('cases')
-    .select('id, public_reference, topic, status, initiator_name, recipient_name')
+    .select('id, public_reference, topic, status, initiator_name, recipient_name, input_tokens_used, output_tokens_used, total_tokens_used')
     .eq('id', id)
     .single()
 
@@ -48,6 +48,21 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <span className="text-outline-variant">·</span>
         <span className="text-label-sm text-on-surface-variant font-mono">{caseRow.public_reference}</span>
         <span className="text-label-sm text-on-surface-variant">— {caseRow.status}</span>
+      </div>
+
+      <div className="mx-4 my-2 flex gap-4 flex-wrap">
+        <div className="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 text-label-sm">
+          <span className="text-on-surface-variant">Input tokens: </span>
+          <span className="font-mono font-medium text-on-surface">{(caseRow.input_tokens_used ?? 0).toLocaleString()}</span>
+        </div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 text-label-sm">
+          <span className="text-on-surface-variant">Output tokens: </span>
+          <span className="font-mono font-medium text-on-surface">{(caseRow.output_tokens_used ?? 0).toLocaleString()}</span>
+        </div>
+        <div className="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 text-label-sm">
+          <span className="text-on-surface-variant">Total tokens: </span>
+          <span className="font-mono font-bold text-primary">{(caseRow.total_tokens_used ?? 0).toLocaleString()}</span>
+        </div>
       </div>
 
       {analysis?.structured_result && (

@@ -11,6 +11,11 @@ export interface ChatMessage {
   content: string
 }
 
+export interface TokenUsage {
+  inputTokens: number
+  outputTokens: number
+}
+
 function getClient(): OpenAI {
   const { OPENAI_API_KEY } = getEnv()
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.')
@@ -23,11 +28,11 @@ function getClient(): OpenAI {
 export async function continueIntake(
   ctx: IntakeContext,
   history: ChatMessage[]
-): Promise<string> {
+): Promise<{ content: string } & TokenUsage> {
   const { OPENAI_MODEL, DEMO_MODE } = getEnv()
 
   if (DEMO_MODE) {
-    return getDemoResponse(history.length)
+    return { content: getDemoResponse(history.length), inputTokens: 0, outputTokens: 0 }
   }
 
   const client = getClient()
@@ -47,17 +52,21 @@ export async function continueIntake(
 
   const content = response.choices[0]?.message?.content
   if (!content) throw new Error('Empty response from OpenAI.')
-  return content
+  return {
+    content,
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+  }
 }
 
 export async function generateIntakeSummary(
   ctx: IntakeContext,
   transcript: string
-): Promise<string> {
+): Promise<{ content: string } & TokenUsage> {
   const { OPENAI_MODEL, DEMO_MODE } = getEnv()
 
   if (DEMO_MODE) {
-    return JSON.stringify(getDemoSummary(ctx))
+    return { content: JSON.stringify(getDemoSummary(ctx)), inputTokens: 0, outputTokens: 0 }
   }
 
   const client = getClient()
@@ -75,7 +84,11 @@ export async function generateIntakeSummary(
   if (!content) throw new Error('Empty summary response from OpenAI.')
 
   JSON.parse(content)  // validate it is valid JSON
-  return content
+  return {
+    content,
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+  }
 }
 
 function getDemoResponse(turn: number): string {

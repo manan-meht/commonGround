@@ -38,11 +38,25 @@ export async function POST(req: NextRequest) {
     session.role === 'initiator' ? caseRow.recipient_name : caseRow.initiator_name
 
   try {
-    const summary = await generateIntakeSummary(
+    const result = await generateIntakeSummary(
       { participantName, role: session.role, topic: caseRow.topic, otherPartyName },
       transcript
     )
-    return NextResponse.json({ summary })
+
+    if (result.inputTokens > 0 || result.outputTokens > 0) {
+      void (async () => {
+        try {
+          const { error } = await db.rpc('increment_case_token_usage', {
+            p_case_id: session.caseId,
+            p_input_tokens: result.inputTokens,
+            p_output_tokens: result.outputTokens,
+          })
+          if (error) console.error('[intake/summary] token usage update failed:', error)
+        } catch (err) { console.error('[intake/summary] token usage update threw:', err) }
+      })()
+    }
+
+    return NextResponse.json({ summary: result.content })
   } catch (err) {
     console.error('[POST /api/intake/summary]', err)
     return NextResponse.json({ error: 'Failed to generate summary.' }, { status: 500 })

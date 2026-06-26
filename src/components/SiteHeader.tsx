@@ -18,9 +18,9 @@ export function SiteHeader({
   userEmail,
 }: SiteHeaderProps) {
   const router = useRouter()
-  const supabase = createClient()
 
   async function signOut() {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()

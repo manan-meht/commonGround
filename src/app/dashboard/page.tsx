@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
+import { getOrCreateCredits } from '@/lib/db/credits'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import Link from 'next/link'
 
@@ -37,12 +38,14 @@ export default async function DashboardPage() {
 
   const db = getServiceClient()
 
-  // Fetch cases where user is the initiator or a participant
-  const { data: cases } = await db
-    .from('cases')
-    .select('id, public_reference, topic, status, initiator_name, recipient_name, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [credits, { data: cases }] = await Promise.all([
+    getOrCreateCredits(user.id),
+    db
+      .from('cases')
+      .select('id, public_reference, topic, status, initiator_name, recipient_name, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+  ])
 
   const displayName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'
 
@@ -51,7 +54,7 @@ export default async function DashboardPage() {
       <SiteHeader />
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-headline-md text-on-surface">Hi, {displayName}</h1>
             <p className="text-on-surface-variant font-body-md">Your conversations</p>
@@ -63,6 +66,25 @@ export default async function DashboardPage() {
             <span className="material-symbols-outlined text-[20px]">add</span>
             New
           </Link>
+        </div>
+
+        {/* Credits bar */}
+        <div className="flex items-center justify-between bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            <div>
+              <p className="text-label-sm text-on-surface font-medium">
+                {credits.rooms_available} room{credits.rooms_available !== 1 ? 's' : ''} available
+                {credits.follow_ups_available > 0 && ` · ${credits.follow_ups_available} follow-ups`}
+              </p>
+              <p className="text-label-sm text-on-surface-variant">{credits.total_rooms_created} conversation{credits.total_rooms_created !== 1 ? 's' : ''} started</p>
+            </div>
+          </div>
+          {credits.rooms_available === 0 && (
+            <Link href="/pricing" className="text-label-sm text-primary font-medium">
+              Buy more →
+            </Link>
+          )}
         </div>
 
         {/* Cases list */}

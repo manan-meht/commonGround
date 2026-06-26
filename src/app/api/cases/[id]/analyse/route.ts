@@ -113,13 +113,26 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     }
 
     // Run analysis (decrypted summaries only in memory, never logged)
-    const report = await runAnalysis({
+    const { report, inputTokens: analysisInputTokens, outputTokens: analysisOutputTokens } = await runAnalysis({
       initiatorName: caseRow.initiator_name,
       recipientName: caseRow.recipient_name,
       topic: caseRow.topic,
       initiatorSummary,
       recipientSummary,
     })
+
+    if (analysisInputTokens > 0 || analysisOutputTokens > 0) {
+      void (async () => {
+        try {
+          const { error } = await db.rpc('increment_case_token_usage', {
+            p_case_id: caseId,
+            p_input_tokens: analysisInputTokens,
+            p_output_tokens: analysisOutputTokens,
+          })
+          if (error) console.error('[analyse] token usage update failed:', error)
+        } catch (err) { console.error('[analyse] token usage update threw:', err) }
+      })()
+    }
 
     // Determine if safety-sensitive
     const safetySensitive = [

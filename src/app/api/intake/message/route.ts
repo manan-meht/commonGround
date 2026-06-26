@@ -93,15 +93,32 @@ export async function POST(req: NextRequest) {
 
     console.error('[intake/message] step: call OpenAI, key present=', !!process.env['OPENAI_API_KEY'])
     let aiResponse: string
+    let inputTokens = 0, outputTokens = 0
     try {
-      aiResponse = await continueIntake(
+      const result = await continueIntake(
         { participantName, role, topic: caseRow.topic, otherPartyName },
         [...history, { role: 'user', content }]
       )
+      aiResponse = result.content
+      inputTokens = result.inputTokens
+      outputTokens = result.outputTokens
     } catch (openaiErr) {
       const e = openaiErr as Error & { status?: number; code?: string; type?: string }
       console.error('[intake/message] OpenAI error:', e.message, 'status=', e.status, 'code=', e.code, 'type=', e.type)
       throw openaiErr
+    }
+
+    if (inputTokens > 0 || outputTokens > 0) {
+      void (async () => {
+        try {
+          const { error } = await db.rpc('increment_case_token_usage', {
+            p_case_id: caseId,
+            p_input_tokens: inputTokens,
+            p_output_tokens: outputTokens,
+          })
+          if (error) console.error('[intake/message] token usage update failed:', error)
+        } catch (err) { console.error('[intake/message] token usage update threw:', err) }
+      })()
     }
 
     console.error('[intake/message] step: insert AI response')

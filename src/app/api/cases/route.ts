@@ -5,6 +5,7 @@ import { generateSecureToken, hashToken, generatePublicReference, inviteExpiresA
 import { setSessionCookie } from '@/lib/auth/session'
 import { isEmail } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
+import { consumeRoomCredit } from '@/lib/db/credits'
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -35,6 +36,15 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
+
+    // Check and consume a room credit (creates the free-room record on first use)
+    const credited = await consumeRoomCredit(user.id)
+    if (!credited) {
+      return NextResponse.json(
+        { error: 'no_credits', message: 'You have used your free room. Purchase a plan to start more conversations.' },
+        { status: 402 }
+      )
+    }
 
     const db = getServiceClient()
     const publicReference = generatePublicReference()

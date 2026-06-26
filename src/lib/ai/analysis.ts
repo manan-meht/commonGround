@@ -15,12 +15,18 @@ import {
 import { getEnv } from '@/lib/env'
 import { MOCK_REPORT } from './mockReport'
 
-export async function runAnalysis(ctx: MediationContext): Promise<ValidatedSharedReport> {
+export interface AnalysisResult {
+  report: ValidatedSharedReport
+  inputTokens: number
+  outputTokens: number
+}
+
+export async function runAnalysis(ctx: MediationContext): Promise<AnalysisResult> {
   const { OPENAI_MODEL, OPENAI_API_KEY, DEMO_MODE } = getEnv()
 
   if (DEMO_MODE) {
     await new Promise((r) => setTimeout(r, 1000))  // simulate processing time
-    return MOCK_REPORT
+    return { report: MOCK_REPORT, inputTokens: 0, outputTokens: 0 }
   }
 
   if (!OPENAI_API_KEY) {
@@ -69,7 +75,11 @@ export async function runAnalysis(ctx: MediationContext): Promise<ValidatedShare
     throw new Error(`OpenAI analysis response failed schema validation: ${JSON.stringify(result.error.issues, null, 2)}`)
   }
 
-  return result.data
+  return {
+    report: result.data,
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+  }
 }
 
 export { MEDIATION_PROMPT_VERSION }
