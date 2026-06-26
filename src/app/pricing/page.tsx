@@ -10,11 +10,18 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-export default async function PricingPage() {
+interface PageProps {
+  searchParams: Promise<{ followup?: string }>
+}
+
+export default async function PricingPage({ searchParams }: PageProps) {
   const user = await getUser()
   if (!user) redirect('/auth?next=/pricing')
 
-  const credits = await getOrCreateCredits(user.id)
+  const [credits, { followup }] = await Promise.all([
+    getOrCreateCredits(user.id),
+    searchParams,
+  ])
 
   return (
     <div className="flex flex-col min-h-screen bg-surface">
@@ -24,6 +31,7 @@ export default async function PricingPage() {
           roomsAvailable={credits.rooms_available}
           followUpsAvailable={credits.follow_ups_available}
           totalRoomsCreated={credits.total_rooms_created}
+          isFollowUp={followup === '1'}
         />
       </main>
       <SiteFooter />
