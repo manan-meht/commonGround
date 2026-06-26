@@ -71,6 +71,10 @@ export function AuthForm() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-outline-variant/40 p-6">
+      <div className="text-center mb-6">
+        {tab === 'signin' && <h1 className="font-headline-lg text-on-surface mb-2">Welcome back</h1>}
+        <p className="text-on-surface-variant font-body-md">A safe place for resolution. Log in to<br />continue your journey.</p>
+      </div>
       {/* Tab toggle */}
       <div className="flex bg-surface-container-low rounded-xl p-1 mb-6">
         {(['signin', 'signup'] as Tab[]).map((t) => (

@@ -7,7 +7,7 @@ import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import type { DbAgreement } from '@/lib/db/types'
 
 export const metadata: Metadata = {
-  title: 'Agreements — Urushi',
+  title: 'Agreements — Urushi Labs',
   robots: { index: false },
 }
 

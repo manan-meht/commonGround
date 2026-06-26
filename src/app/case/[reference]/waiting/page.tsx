@@ -7,7 +7,7 @@ import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import { buildWhatsAppShareUrl } from '@/lib/notifications/whatsapp'
 
 export const metadata: Metadata = {
-  title: 'Waiting — Urushi',
+  title: 'Waiting — Urushi Labs',
   robots: { index: false, follow: false },
 }
 

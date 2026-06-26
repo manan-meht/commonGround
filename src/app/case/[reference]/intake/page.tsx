@@ -5,7 +5,7 @@ import { getServiceClient } from '@/lib/db/client'
 import { IntakeChat } from './IntakeChat'
 
 export const metadata: Metadata = {
-  title: 'Private Intake — Urushi',
+  title: 'Private Intake — Urushi Labs',
   robots: { index: false, follow: false },
 }
 

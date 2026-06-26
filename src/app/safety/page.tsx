@@ -10,7 +10,7 @@ export default function SafetyPage() {
         <div className="bg-error-container/20 border border-error/20 rounded-xl p-6 mb-stack-lg">
           <h2 className="font-label-md font-bold text-on-error-container mb-2">If you are in immediate danger</h2>
           <p className="font-body-md text-on-error-container/90">
-            If you or someone else is in immediate danger, please contact your local emergency services now. Urushi is an AI tool and cannot provide crisis support or verify danger.
+            If you or someone else is in immediate danger, please contact your local emergency services now. Urushi Labs is an AI tool and cannot provide crisis support or verify danger.
           </p>
         </div>
 

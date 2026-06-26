@@ -4,7 +4,7 @@ import { getUser } from '@/lib/supabase/server'
 import { InvitationView } from './InvitationView'
 
 export const metadata: Metadata = {
-  title: 'Invitation — Urushi',
+  title: 'Invitation — Urushi Labs',
   robots: { index: false, follow: false },
 }
 

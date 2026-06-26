@@ -4,7 +4,7 @@ import { getUser } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Urushi — Understand each other before deciding what comes next',
+  title: 'Urushi Labs — Understand each other before deciding what comes next',
 }
 
 export default async function LandingPage() {
@@ -128,7 +128,7 @@ export default async function LandingPage() {
 
         {/* Use cases */}
         <section className="px-margin-mobile py-stack-lg max-w-2xl mx-auto">
-          <h2 className="font-headline-md text-on-surface mb-stack-md text-center">When to use Urushi</h2>
+          <h2 className="font-headline-md text-on-surface mb-stack-md text-center">When to use Urushi Labs</h2>
           <div className="flex flex-col gap-4">
             {[
               {

@@ -7,7 +7,7 @@ import { getOrCreateCredits } from '@/lib/db/credits'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Start a Conversation — Urushi',
+  title: 'Start a Conversation — Urushi Labs',
   robots: { index: false },
 }
 

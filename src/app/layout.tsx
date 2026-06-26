@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Urushi — AI-Assisted Communication Facilitation',
+  title: 'Urushi Labs — AI-Assisted Communication Facilitation',
   description:
-    'Urushi helps two people independently share their perspective with an impartial AI facilitator, then generates a neutral shared report.',
+    'Urushi Labs helps two people independently share their perspective with an impartial AI facilitator, then generates a neutral shared report.',
   robots: { index: true, follow: true },
 }
 
