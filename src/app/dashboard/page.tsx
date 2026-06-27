@@ -38,14 +38,36 @@ export default async function DashboardPage() {
 
   const db = getServiceClient()
 
-  const [credits, { data: cases }] = await Promise.all([
+  const [credits, initiatedResult, participantResult] = await Promise.all([
     getOrCreateCredits(user.id),
     db
       .from('cases')
       .select('id, public_reference, topic, status, initiator_name, recipient_name, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
+    db
+      .from('participants')
+      .select('case_id, cases(id, public_reference, topic, status, initiator_name, recipient_name, created_at)')
+      .eq('user_id', user.id),
   ])
+
+  // Merge initiated + recipient cases, deduplicate by id
+  type CaseRow = { id: string; public_reference: string; topic: string; status: string; initiator_name: string; recipient_name: string; created_at: string }
+  const seenIds = new Set<string>()
+  const allCases: CaseRow[] = []
+  for (const c of (initiatedResult.data ?? [])) {
+    seenIds.add(c.id)
+    allCases.push(c as unknown as CaseRow)
+  }
+  for (const p of (participantResult.data ?? [])) {
+    const c = p.cases as unknown as CaseRow | null
+    if (c && !seenIds.has(c.id)) {
+      seenIds.add(c.id)
+      allCases.push(c)
+    }
+  }
+  allCases.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  const cases = allCases
 
   const displayName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'there'
 
