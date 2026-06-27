@@ -16,6 +16,7 @@ interface Props {
   participantName: string
   otherPartyName: string
   role: 'initiator' | 'recipient'
+  isLoggedIn?: boolean
 }
 
 // Matches IntakeSummarySchema from lib/ai/intakePrompt.ts
@@ -182,7 +183,7 @@ const INITIAL_MESSAGE: Message = {
   content: "Briefly tell me what happened in the most recent incident, what each person did, and what you most want to change. Three to six sentences is enough to get started.",
 }
 
-export function IntakeChat({ caseReference, topic, participantName }: Props) {
+export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }: Props) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
   const [input, setInput] = useState('')
@@ -336,9 +337,17 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
                 </span>
               </div>
             </div>
-            <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant" aria-label="Exit">
-              <span className="material-symbols-outlined">close</span>
-            </Link>
+            <div className="flex items-center gap-1">
+              {isLoggedIn && (
+                <Link href="/dashboard" className="text-on-surface-variant font-label-md flex items-center gap-1 hover:text-secondary transition-colors px-2 py-2 rounded-full hover:bg-surface-container">
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                  <span className="hidden md:inline text-label-sm">My cases</span>
+                </Link>
+              )}
+              <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant" aria-label="Exit">
+                <span className="material-symbols-outlined">close</span>
+              </Link>
+            </div>
           </div>
           {/* Progress bar */}
           <div className="flex items-center gap-2">

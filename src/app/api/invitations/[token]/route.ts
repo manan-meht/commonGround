@@ -99,10 +99,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   if (existingParticipant) {
     participantId = existingParticipant.id
 
-    // Update last_accessed
+    // Update last_accessed and link Supabase user if not already linked
     await db
       .from('participants')
-      .update({ last_accessed_at: new Date().toISOString() })
+      .update({ last_accessed_at: new Date().toISOString(), user_id: user.id })
       .eq('id', participantId)
   } else {
     // Generate a new access token for the recipient

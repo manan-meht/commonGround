@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
+import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
 import { IntakeChat } from './IntakeChat'
 
@@ -15,7 +16,7 @@ interface PageProps {
 
 export default async function IntakePage({ params }: PageProps) {
   const { reference } = await params
-  const session = await getSession()
+  const [session, supabaseUser] = await Promise.all([getSession(), getUser()])
 
   if (!session || session.caseReference !== reference) {
     redirect('/')
@@ -54,6 +55,7 @@ export default async function IntakePage({ params }: PageProps) {
       participantName={participantName}
       otherPartyName={otherPartyName}
       role={session.role}
+      isLoggedIn={!!supabaseUser}
     />
   )
 }
