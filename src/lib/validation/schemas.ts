@@ -1,36 +1,41 @@
 import { z } from 'zod'
-import { parsePhoneNumber } from 'libphonenumber-js'
 
-function normalisePhone(val: string, ctx: z.RefinementCtx): string {
-  try {
-    const parsed = parsePhoneNumber(val)
-    if (!parsed.isValid()) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid phone number. Include the country code, e.g. +1 555 555 5555.' })
-      return z.NEVER
-    }
-    return parsed.format('E.164')
-  } catch {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid phone number format.' })
-    return z.NEVER
-  }
+// ─── Relationship enum ─────────────────────────────────────────────────────────
+export const RELATIONSHIP_OPTIONS = [
+  'partner_or_spouse',
+  'family_member',
+  'friend',
+  'colleague',
+  'business_partner',
+  'manager_or_employee',
+  'other',
+] as const
+
+export type RelationshipType = typeof RELATIONSHIP_OPTIONS[number]
+
+export const RELATIONSHIP_LABELS: Record<RelationshipType, string> = {
+  partner_or_spouse: 'Partner or spouse',
+  family_member: 'Family member',
+  friend: 'Friend',
+  colleague: 'Colleague',
+  business_partner: 'Business partner',
+  manager_or_employee: 'Manager or employee',
+  other: 'Other',
 }
 
 // ─── Case creation ─────────────────────────────────────────────────────────────
 export const CreateCaseSchema = z.object({
-  initiatorName: z.string().min(1, 'Your name is required.').max(80),
-  initiatorContact: z
+  recipientName: z
     .string()
-    .min(1, 'Your email or phone is required.')
-    .max(200),
-  recipientName: z.string().min(1, "The other person's name is required.").max(80),
-  recipientPhone: z
-    .string()
-    .min(1, "The other person's WhatsApp number is required.")
-    .transform(normalisePhone),
+    .trim()
+    .min(1, "The other person's name is required.")
+    .max(80),
+  relationship: z.enum(RELATIONSHIP_OPTIONS).optional(),
   topic: z
     .string()
+    .trim()
     .min(5, 'Please describe the topic in at least 5 characters.')
-    .max(500, 'Topic must be 500 characters or fewer.'),
+    .max(120, 'Topic must be 120 characters or fewer.'),
   consentVersion: z.string().optional().default('1.0'),
 })
 

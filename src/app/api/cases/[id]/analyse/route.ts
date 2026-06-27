@@ -164,10 +164,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       })
       .eq('id', caseId)
 
-    // Create agreement items from possibleAgreements
-    const agreements = Array.isArray(report.possibleAgreements)
-      ? report.possibleAgreements
-      : [report.possibleAgreements]
+    // Create agreement items from workingAgreements
+    const agreements = report.workingAgreements.map((w) => w.agreement)
     if (agreements.length > 0) {
       await db.from('agreements').insert(
         agreements.map((text: string) => ({

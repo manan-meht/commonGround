@@ -3,13 +3,27 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { RELATIONSHIP_LABELS, RELATIONSHIP_OPTIONS } from '@/lib/validation/schemas'
 
-export function StartConversationForm() {
+interface Props {
+  userFirstName: string
+  userEmail: string | null
+  roomsRemaining: number
+}
+
+const TOPIC_EXAMPLES = [
+  'Dividing responsibilities at home',
+  'How we make business decisions',
+  'A disagreement about money',
+]
+
+export function StartConversationForm({ userFirstName, userEmail, roomsRemaining }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [serverError, setServerError] = useState('')
   const [noCredits, setNoCredits] = useState(false)
+  const [topic, setTopic] = useState('')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -20,10 +34,8 @@ export function StartConversationForm() {
 
     const fd = new FormData(e.currentTarget)
     const body = {
-      initiatorName: fd.get('initiatorName'),
-      initiatorContact: fd.get('initiatorContact'),
       recipientName: fd.get('recipientName'),
-      recipientPhone: fd.get('recipientPhone'),
+      relationship: fd.get('relationship') || undefined,
       topic: fd.get('topic'),
     }
 
@@ -34,7 +46,12 @@ export function StartConversationForm() {
         body: JSON.stringify(body),
       })
 
-      const data = await res.json() as { caseReference?: string; inviteLink?: string; errors?: Record<string, string[]>; error?: string }
+      const data = await res.json() as {
+        caseReference?: string
+        inviteLink?: string
+        errors?: Record<string, string[]>
+        error?: string
+      }
 
       if (!res.ok) {
         if (res.status === 402 || data.error === 'no_credits') {
@@ -60,6 +77,19 @@ export function StartConversationForm() {
 
   return (
     <div className="px-margin-mobile pb-stack-lg max-w-xl mx-auto">
+
+      {/* Identity indicator */}
+      <div className="flex items-center gap-2 mb-6 p-3 bg-surface-container-low rounded-xl border border-outline-variant/40">
+        <span className="material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+        <div>
+          <p className="font-label-md text-on-surface">Starting as <strong>{userFirstName}</strong></p>
+          {userEmail && <p className="text-label-sm text-on-surface-variant">{userEmail}</p>}
+        </div>
+        <Link href="/auth" className="ml-auto text-label-sm text-secondary hover:underline shrink-0">
+          Change account
+        </Link>
+      </div>
+
       <form className="space-y-gutter" onSubmit={handleSubmit} noValidate>
 
         {noCredits && (
@@ -86,139 +116,92 @@ export function StartConversationForm() {
           </div>
         )}
 
-        <section className="space-y-4">
-          <h2 className="text-label-sm font-label-sm text-primary tracking-widest uppercase">Your Details</h2>
-
-          <div className="space-y-stack-sm">
-            <label htmlFor="initiatorName" className="block font-label-md text-on-surface-variant ml-1">
-              Your First Name
-            </label>
-            <input
-              id="initiatorName"
-              name="initiatorName"
-              type="text"
-              required
-              maxLength={80}
-              placeholder="e.g., Alex"
-              className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
-              aria-describedby={errors['initiatorName'] ? 'initiatorName-error' : undefined}
-            />
-            {errors['initiatorName'] && (
-              <p id="initiatorName-error" className="text-error text-label-md ml-1" role="alert">{errors['initiatorName'][0]}</p>
-            )}
-          </div>
-
-          <div className="space-y-stack-sm">
-            <label htmlFor="initiatorContact" className="block font-label-md text-on-surface-variant ml-1">
-              Your Email or Phone
-            </label>
-            <input
-              id="initiatorContact"
-              name="initiatorContact"
-              type="text"
-              required
-              maxLength={200}
-              placeholder="For case access"
-              className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
-              aria-describedby={errors['initiatorContact'] ? 'initiatorContact-error' : undefined}
-            />
-            {errors['initiatorContact'] && (
-              <p id="initiatorContact-error" className="text-error text-label-md ml-1" role="alert">{errors['initiatorContact'][0]}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="space-y-4 pt-4">
-          <h2 className="text-label-sm font-label-sm text-primary tracking-widest uppercase">Invite the Other Person</h2>
-
-          <div className="space-y-stack-sm">
-            <label htmlFor="recipientName" className="block font-label-md text-on-surface-variant ml-1">
-              Their First Name
-            </label>
-            <input
-              id="recipientName"
-              name="recipientName"
-              type="text"
-              required
-              maxLength={80}
-              placeholder="Who will you be speaking with?"
-              className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
-              aria-describedby={errors['recipientName'] ? 'recipientName-error' : undefined}
-            />
-            {errors['recipientName'] && (
-              <p id="recipientName-error" className="text-error text-label-md ml-1" role="alert">{errors['recipientName'][0]}</p>
-            )}
-          </div>
-
-          <div className="space-y-stack-sm">
-            <label htmlFor="recipientPhone" className="block font-label-md text-on-surface-variant ml-1">
-              Their WhatsApp Number
-            </label>
-            <div className="relative">
-              <input
-                id="recipientPhone"
-                name="recipientPhone"
-                type="tel"
-                required
-                placeholder="+1 555 555 5555"
-                className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
-                aria-describedby={errors['recipientPhone'] ? 'recipientPhone-error' : 'recipientPhone-hint'}
-              />
-            </div>
-            <p id="recipientPhone-hint" className="text-[12px] text-outline-variant mt-1 ml-1 italic">
-              Include the country code, e.g. +44 7911 123456
-            </p>
-            {errors['recipientPhone'] && (
-              <p id="recipientPhone-error" className="text-error text-label-md ml-1" role="alert">{errors['recipientPhone'][0]}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="space-y-4 pt-4">
-          <h2 className="text-label-sm font-label-sm text-primary tracking-widest uppercase">The Conversation</h2>
-
-          <div className="space-y-stack-sm">
-            <label htmlFor="topic" className="block font-label-md text-on-surface-variant ml-1">
-              Neutral Discussion Topic
-            </label>
-            <textarea
-              id="topic"
-              name="topic"
-              required
-              rows={3}
-              maxLength={500}
-              placeholder="e.g., 'Shared schedule for the upcoming holidays' or 'Revisiting our communication approach'"
-              className="w-full p-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50 resize-none"
-              aria-describedby="topic-hint topic-warning"
-            />
-            <p id="topic-hint" className="text-[12px] text-on-surface-variant leading-relaxed">
-              <span className="font-bold text-primary">Tip:</span>{' '}
-              Frame the topic neutrally — the other person will see this description.
-            </p>
-            <div id="topic-warning" className="bg-secondary-container/20 text-on-secondary-container p-3 rounded-lg text-label-md">
-              ⚠️ Do not include accusations, private details, or sensitive personal information in the topic. The other person will see it.
-            </div>
-            {errors['topic'] && (
-              <p className="text-error text-label-md ml-1" role="alert">{errors['topic'][0]}</p>
-            )}
-          </div>
-        </section>
-
-        <div className="bg-surface-container-low p-4 rounded-xl space-y-3">
-          <div className="flex gap-3">
-            <span className="material-symbols-outlined text-secondary shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
-            <div className="space-y-1">
-              <h3 className="text-label-md font-bold text-on-surface">Privacy Notice</h3>
-              <p className="text-label-sm text-on-surface-variant leading-tight">
-                Your conversation with the AI facilitator is encrypted. Your raw responses are never
-                shown directly to the other participant. A neutral shared report is only generated after
-                both parties have independently submitted their perspectives.
-              </p>
-            </div>
-          </div>
+        {/* Who is this with */}
+        <div className="space-y-stack-sm">
+          <label htmlFor="recipientName" className="block font-label-md text-on-surface-variant ml-1">
+            Who is this conversation with?
+          </label>
+          <input
+            id="recipientName"
+            name="recipientName"
+            type="text"
+            required
+            maxLength={80}
+            placeholder="e.g., Alex"
+            className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
+            aria-describedby={errors['recipientName'] ? 'recipientName-error' : undefined}
+          />
+          {errors['recipientName'] && (
+            <p id="recipientName-error" className="text-error text-label-md ml-1" role="alert">{errors['recipientName'][0]}</p>
+          )}
         </div>
 
-        <div className="pt-4 space-y-3">
+        {/* Relationship (optional) */}
+        <div className="space-y-stack-sm">
+          <label htmlFor="relationship" className="block font-label-md text-on-surface-variant ml-1">
+            How do you know each other? <span className="text-outline font-normal">(optional)</span>
+          </label>
+          <select
+            id="relationship"
+            name="relationship"
+            defaultValue=""
+            className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-on-surface appearance-none"
+          >
+            <option value="" disabled>Select relationship</option>
+            {RELATIONSHIP_OPTIONS.map((key) => (
+              <option key={key} value={key}>{RELATIONSHIP_LABELS[key]}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Topic */}
+        <div className="space-y-stack-sm">
+          <label htmlFor="topic" className="block font-label-md text-on-surface-variant ml-1">
+            What would you like help discussing?
+          </label>
+          <p className="text-label-sm text-on-surface-variant ml-1">Describe the subject, not who is at fault.</p>
+          <input
+            id="topic"
+            name="topic"
+            type="text"
+            required
+            maxLength={120}
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="e.g., How we make decisions about our business"
+            className="w-full h-14 px-4 bg-white border border-outline-variant rounded-xl focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50"
+            aria-describedby="topic-examples topic-warning"
+          />
+          <div id="topic-examples" className="flex flex-wrap gap-2">
+            {TOPIC_EXAMPLES.map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => setTopic(example)}
+                className="text-label-sm text-secondary border border-secondary/30 rounded-full px-3 py-1 hover:bg-secondary/5 transition-colors"
+              >
+                {example}
+              </button>
+            ))}
+          </div>
+          <p id="topic-warning" className="text-label-sm text-on-surface-variant leading-relaxed">
+            Keep the title neutral. Do not include accusations, private details, or sensitive personal information — the other person will see it.
+          </p>
+          {errors['topic'] && (
+            <p className="text-error text-label-md ml-1" role="alert">{errors['topic'][0]}</p>
+          )}
+        </div>
+
+        {/* Privacy note */}
+        <div className="flex gap-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant/40 items-start">
+          <span className="material-symbols-outlined text-secondary shrink-0 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
+          <p className="text-label-sm text-on-surface-variant leading-snug">
+            Your raw responses will not be shown to the other person. A neutral shared report is only generated after both of you have independently contributed.
+          </p>
+        </div>
+
+        {/* Submit */}
+        <div className="pt-2 space-y-3">
           <button
             type="submit"
             disabled={loading}
@@ -232,9 +215,17 @@ export function StartConversationForm() {
                 </svg>
                 Setting up your private space…
               </span>
-            ) : 'Continue privately'}
+            ) : 'Start private intake'}
           </button>
+          <p className="text-center text-label-sm text-on-surface-variant">Usually takes 3–5 minutes.</p>
         </div>
+
+        {/* Rooms remaining */}
+        {roomsRemaining > 0 && (
+          <p className="text-center text-label-sm text-outline">
+            {roomsRemaining} conversation room{roomsRemaining !== 1 ? 's' : ''} remaining
+          </p>
+        )}
       </form>
     </div>
   )

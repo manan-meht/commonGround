@@ -17,26 +17,26 @@ interface Props {
   isAdminView?: boolean
 }
 
-// OpenAI sometimes returns strings instead of arrays or objects — normalise defensively
-function toArray<T>(val: T | T[] | string | undefined | null): T[] {
-  if (!val) return []
-  if (Array.isArray(val)) return val
-  if (typeof val === 'string') return [val as unknown as T]
-  return [val]
-}
-
-function toStringArray(val: string | string[] | undefined | null): string[] {
-  if (!val) return []
-  if (Array.isArray(val)) return val
-  return [val]
-}
-
 const SAFETY_SENSITIVE = [
   'possible_coercion_or_abuse',
   'possible_self_harm_or_violence',
   'possible_child_safety_issue',
   'legal_or_professional_support_needed',
 ]
+
+const ASSESSMENT_LABEL: Record<string, string> = {
+  not_acceptable: 'Not acceptable',
+  needs_change: 'Needs to change',
+  reasonable: 'Reasonable',
+  cannot_determine: 'Cannot determine',
+}
+
+const ASSESSMENT_COLOR: Record<string, string> = {
+  not_acceptable: 'text-error',
+  needs_change: 'text-warning',
+  reasonable: 'text-primary',
+  cannot_determine: 'text-outline',
+}
 
 export function ReportView({
   report,
@@ -47,15 +47,16 @@ export function ReportView({
   topic,
   initiatorName,
   recipientName,
-  isAdminView = false,
+  isAdminView: _isAdminView = false,
 }: Props) {
   if (SAFETY_SENSITIVE.includes(report.safetyCategory)) {
     return <SafetyScreen report={report} />
   }
 
-  const yourPerspective = role === 'initiator' ? report.initiatorPerspective : report.recipientPerspective
-  const theirPerspective = role === 'initiator' ? report.recipientPerspective : report.initiatorPerspective
+  const yourName = role === 'initiator' ? initiatorName : recipientName
   const theirName = role === 'initiator' ? recipientName : initiatorName
+  const yourRecognition = role === 'initiator' ? report.initiatorRecognition : report.recipientRecognition
+  const theirRecognition = role === 'initiator' ? report.recipientRecognition : report.initiatorRecognition
 
   return (
     <>
@@ -73,177 +74,192 @@ export function ReportView({
           </div>
         </section>
 
-        {/* Safety category badge */}
         {report.safetyCategory === 'high_conflict' && (
           <div className="bg-error-container/20 border border-error/20 p-4 rounded-xl mb-stack-md flex gap-3">
             <span className="material-symbols-outlined text-error shrink-0">warning</span>
             <p className="font-body-md text-on-surface">
-              This report identified <strong>high-conflict patterns</strong>. Please review the safety note at the bottom of this report before taking action.
+              This report identified <strong>high-conflict patterns</strong>. Please review the safety note at the bottom before taking action.
             </p>
           </div>
         )}
 
-        {/* Neutral overview */}
-        <Section icon="info" title="Neutral Overview" primary>
-          <p className="text-on-surface-variant leading-relaxed font-body-md">{report.neutralOverview}</p>
+        {/* Bottom line */}
+        <Section icon="info" title="Summary" primary>
+          <p className="text-on-surface-variant leading-relaxed font-body-md">{report.bottomLine}</p>
         </Section>
 
-        {/* Perspectives */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
-          <PerspectiveCard
-            name="Your perspective"
-            perspective={yourPerspective}
-            color="primary"
-          />
-          <PerspectiveCard
-            name={`${theirName}'s perspective`}
-            perspective={theirPerspective}
-            color="secondary"
-          />
-        </section>
-
-        {/* Agreed facts */}
-        {report.agreedFacts.length > 0 && (
-          <Section icon="handshake" title="Agreed Facts" iconFill>
-            <ul className="space-y-3">
-              {report.agreedFacts.map((fact, i) => (
-                <li key={i} className="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-primary/10">
-                  <span className="material-symbols-outlined text-primary">check_circle</span>
-                  <p className="font-body-md">{fact}</p>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
-        {/* Disputed interpretations */}
-        {toArray(report.disputedInterpretations).length > 0 && (
-          <Section icon="error" title="Disputed Interpretations" iconFill>
-            <div className="bg-error-container/20 border border-error/10 p-6 rounded-xl space-y-4">
-              {toArray(report.disputedInterpretations).map((d, i) => (
-                <div key={i} className="border-b border-error/10 last:border-0 pb-4 last:pb-0">
-                  {typeof d === 'string' ? (
-                    <p className="font-body-md text-on-surface-variant">{d}</p>
-                  ) : (
-                    <>
-                      <p className="font-label-md text-on-surface font-bold mb-2">{d.event}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div className="bg-white p-3 rounded-lg">
-                          <p className="font-label-sm text-primary uppercase mb-1">Your view</p>
-                          <p className="font-body-md text-on-surface-variant">{d.initiatorView}</p>
-                        </div>
-                        <div className="bg-white p-3 rounded-lg">
-                          <p className="font-label-sm text-secondary uppercase mb-1">{theirName}&apos;s view</p>
-                          <p className="font-body-md text-on-surface-variant">{d.recipientView}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* Points of agreement */}
-        {toStringArray(report.pointsOfAgreement).length > 0 && (
-          <Section icon="join_inner" title="Points of Agreement">
-            <ul className="space-y-2">
-              {toStringArray(report.pointsOfAgreement).map((p, i) => (
-                <li key={i} className="flex gap-3 p-3 bg-primary-container/10 rounded-lg">
-                  <span className="material-symbols-outlined text-primary text-sm mt-0.5">check</span>
-                  <p className="font-body-md">{p}</p>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
         {/* Shared goals */}
-        {toStringArray(report.sharedGoals).length > 0 && (
+        {report.sharedGoals.length > 0 && (
           <Section icon="track_changes" title="Shared Goals">
             <ul className="space-y-2">
-              {toStringArray(report.sharedGoals).map((g, i) => (
+              {report.sharedGoals.map((g, i) => (
                 <li key={i} className="font-body-md text-on-surface-variant border-l-2 border-secondary pl-4 py-1">{g}</li>
               ))}
             </ul>
           </Section>
         )}
 
-        {/* Intention vs impact */}
-        {toArray(report.intentionVsImpact).length > 0 && (
-          <Section icon="compare_arrows" title="Intention vs Impact">
+        {/* Perspective recognition */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
+          <RecognitionCard name="Your perspective" recognition={yourRecognition} color="primary" yourName={yourName} />
+          <RecognitionCard name={`${theirName}'s perspective`} recognition={theirRecognition} color="secondary" yourName={theirName} />
+        </section>
+
+        {/* Behavioural assessments */}
+        {report.behaviouralAssessments.length > 0 && (
+          <Section icon="gavel" title="Behavioural Assessments" iconFill>
             <div className="space-y-4">
-              {toArray(report.intentionVsImpact).map((item, i) => (
-                <div key={i} className="bg-white p-4 rounded-xl shadow-sm">
-                  {typeof item === 'string' ? (
-                    <p className="font-body-md text-on-surface-variant">{item}</p>
-                  ) : (
-                    <>
-                      <p className="font-label-sm text-outline uppercase mb-2">{item.actor === role ? 'Your action' : `${theirName}'s action`}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-label-md text-primary font-bold mb-1">Intended</p>
-                          <p className="font-body-md text-on-surface-variant">{item.intendedMessage}</p>
-                        </div>
-                        <div>
-                          <p className="font-label-md text-error font-bold mb-1">Perceived impact</p>
-                          <p className="font-body-md text-on-surface-variant">{item.perceivedImpact}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
+              {report.behaviouralAssessments.map((b, i) => {
+                const ownerLabel = b.owner === 'both' ? 'Both' : b.owner === role ? 'You' : theirName
+                return (
+                  <div key={i} className="bg-white p-5 rounded-xl shadow-sm border border-outline-variant">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <span className="font-label-sm text-outline uppercase">{ownerLabel}</span>
+                      <span className={`font-label-sm font-bold uppercase ${ASSESSMENT_COLOR[b.assessment] ?? 'text-outline'}`}>
+                        {ASSESSMENT_LABEL[b.assessment]}
+                      </span>
+                    </div>
+                    <p className="font-body-md font-medium text-on-surface mb-1">{b.behaviour}</p>
+                    <p className="font-body-md text-on-surface-variant mb-2">{b.directFinding}</p>
+                    {b.impact && <p className="text-label-sm text-outline">Impact: {b.impact}</p>}
+                    {b.requiredChange && <p className="text-label-sm text-primary mt-1">Required change: {b.requiredChange}</p>}
+                    {b.requiredRepair && <p className="text-label-sm text-secondary mt-1">Required repair: {b.requiredRepair}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          </Section>
+        )}
+
+        {/* Disputed points */}
+        {report.disputedOrUnknownPoints.length > 0 && (
+          <Section icon="error" title="Disputed or Unknown Points" iconFill>
+            <div className="bg-error-container/20 border border-error/10 p-6 rounded-xl space-y-4">
+              {report.disputedOrUnknownPoints.map((d, i) => (
+                <div key={i} className="border-b border-error/10 last:border-0 pb-4 last:pb-0">
+                  <p className="font-label-md text-on-surface font-bold mb-2">{d.issue}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="font-label-sm text-primary uppercase mb-1">Your view</p>
+                      <p className="font-body-md text-on-surface-variant">{d.initiatorView}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="font-label-sm text-secondary uppercase mb-1">{theirName}&apos;s view</p>
+                      <p className="font-body-md text-on-surface-variant">{d.recipientView}</p>
+                    </div>
+                  </div>
+                  <p className="font-body-md text-on-surface-variant italic">{d.fairConclusion}</p>
                 </div>
               ))}
             </div>
           </Section>
         )}
 
-        {/* What each person needs */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
-          <NeedsCard title="What you need acknowledged" needs={toStringArray(report.initiatorNeeds)} color="primary" />
-          <NeedsCard title={`What ${theirName} needs acknowledged`} needs={toStringArray(report.recipientNeeds)} color="secondary" />
-        </section>
+        {/* Escalation cycle */}
+        {report.escalationCycle.length > 0 && (
+          <Section icon="compare_arrows" title="Escalation Cycle">
+            <div className="space-y-3">
+              {report.escalationCycle.map((step, i) => {
+                const actorLabel = step.actor === 'both' ? 'Both' : step.actor === 'context' ? 'Context' : step.actor === role ? 'You' : theirName
+                return (
+                  <div key={i} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm">
+                    <div className="flex-none w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-sm font-bold">
+                      {step.step}
+                    </div>
+                    <div>
+                      <p className="font-label-sm text-outline uppercase mb-1">{actorLabel}</p>
+                      <p className="font-body-md text-on-surface">{step.triggerOrInterpretation}</p>
+                      <p className="font-body-md text-on-surface-variant">→ {step.response}</p>
+                      {step.impactOnCycle && <p className="text-label-sm text-outline mt-1">{step.impactOnCycle}</p>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Section>
+        )}
 
-        {/* Accountability */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
-          <AccountabilityCard title="Your possible actions" items={toStringArray(report.initiatorAccountability)} />
-          <AccountabilityCard title={`${theirName}'s possible actions`} items={toStringArray(report.recipientAccountability)} />
-        </section>
+        {/* Repairs required */}
+        {report.repairsRequired.length > 0 && (
+          <Section icon="healing" title="Repairs Required" iconFill>
+            <div className="space-y-4">
+              {report.repairsRequired.map((r, i) => {
+                const ownerLabel = r.owner === 'both' ? 'Both' : r.owner === role ? 'You' : theirName
+                return (
+                  <div key={i} className="bg-white p-5 rounded-xl shadow-sm border border-outline-variant">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-label-sm text-outline uppercase">{ownerLabel} → {r.owedTo}</span>
+                      <span className="font-label-sm text-outline">{r.timeframe}</span>
+                    </div>
+                    <p className="font-body-md text-on-surface mb-2">{r.acknowledgementNeeded}</p>
+                    <p className="font-body-md text-on-surface-variant">{r.actionNeeded}</p>
+                    {r.mustNotRequire && (
+                      <p className="text-label-sm text-outline mt-2">Must not demand: {r.mustNotRequire}</p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </Section>
+        )}
 
-        {/* Next steps */}
-        <Section icon="fact_check" title="Recommended Next Steps" iconFill>
-          <div className="space-y-3">
-            {toArray(report.recommendedNextSteps).map((step, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-sm">
-                {typeof step === 'string' ? (
-                  <p className="font-body-md text-on-surface">{step}</p>
-                ) : (
-                  <>
-                    <span className={`material-symbols-outlined text-sm mt-0.5 ${step.owner === 'initiator' ? 'text-primary' : step.owner === 'recipient' ? 'text-secondary' : 'text-tertiary'}`}>
+        {/* Action plan */}
+        {report.actionPlan.length > 0 && (
+          <Section icon="fact_check" title="Action Plan" iconFill>
+            <div className="space-y-3">
+              {report.actionPlan.map((step, i) => {
+                const ownerLabel = step.owner === 'both' ? 'Both' : step.owner === role ? 'You' : theirName
+                return (
+                  <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-sm">
+                    <span className={`material-symbols-outlined text-sm mt-0.5 ${step.owner === role ? 'text-primary' : step.owner === 'both' ? 'text-tertiary' : 'text-secondary'}`}>
                       {step.owner === 'both' ? 'group' : 'person'}
                     </span>
                     <div>
+                      <p className="font-label-sm text-outline uppercase mb-1">{ownerLabel}</p>
                       <p className="font-body-md text-on-surface">{step.action}</p>
-                      {step.timeframe && <p className="text-label-sm text-outline mt-1">{step.timeframe}</p>}
+                      <p className="text-label-sm text-outline mt-1">{step.timeframe}</p>
+                      {step.successMeasure && <p className="text-label-sm text-primary mt-1">Success: {step.successMeasure}</p>}
                     </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </Section>
+                  </div>
+                )
+              })}
+            </div>
+          </Section>
+        )}
 
-        {/* Opening script */}
-        <section className="mb-stack-lg bg-primary-container/10 p-6 rounded-xl border-2 border-dashed border-primary/20">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-primary">record_voice_over</span>
-            <h3 className="font-headline-md text-on-surface">Suggested Opening Script</h3>
-          </div>
-          <p className="font-body-md text-on-surface-variant italic">{report.suggestedOpeningScript}</p>
-        </section>
+        {/* Suggested words */}
+        {report.suggestedWords.length > 0 && (
+          <Section icon="record_voice_over" title="Suggested Words">
+            <div className="space-y-4">
+              {report.suggestedWords.map((sw, i) => {
+                const speakerLabel = sw.speaker === role ? 'You' : theirName
+                return (
+                  <div key={i} className="bg-primary-container/10 p-5 rounded-xl border-2 border-dashed border-primary/20">
+                    <p className="font-label-sm text-outline uppercase mb-1">{speakerLabel} — {sw.purpose}</p>
+                    <p className="font-body-md text-on-surface-variant italic">{sw.script}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </Section>
+        )}
 
-        {/* Possible agreements */}
+        {/* Working agreements */}
+        {report.workingAgreements.length > 0 && (
+          <Section icon="handshake" title="Working Agreements" iconFill>
+            <div className="space-y-3">
+              {report.workingAgreements.map((wa, i) => (
+                <div key={i} className="bg-white p-5 rounded-xl shadow-sm border border-outline-variant">
+                  <p className="font-body-md font-medium text-on-surface mb-2">{wa.agreement}</p>
+                  <p className="text-label-sm text-outline">How: {wa.implementation}</p>
+                  <p className="text-label-sm text-outline mt-1">If breached: {wa.breachResponse}</p>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* DB agreements (responses) */}
         {agreements.length > 0 && (
           <Section icon="assignment_turned_in" title="Proposed Agreements">
             <div className="space-y-3">
@@ -257,13 +273,40 @@ export function ReportView({
                         <p className="text-label-sm text-outline mt-1 capitalize">Your response: {myResponse}</p>
                       )}
                     </div>
-                    {/* Respond button hidden until feature is ready */}
                   </div>
                 )
               })}
             </div>
           </Section>
         )}
+
+        {/* Review point */}
+        <Section icon="event_repeat" title="Review Point">
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-outline-variant">
+            <p className="font-label-md font-bold text-on-surface mb-2">{report.reviewPoint.timeframe}</p>
+            {report.reviewPoint.measuresOfProgress.length > 0 && (
+              <ul className="space-y-1 mb-3">
+                {report.reviewPoint.measuresOfProgress.map((m, i) => (
+                  <li key={i} className="flex gap-2 font-body-md text-on-surface-variant">
+                    <span className="text-primary">•</span>{m}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {report.reviewPoint.ifNoImprovement.length > 0 && (
+              <>
+                <p className="font-label-sm text-outline uppercase mb-1">If no improvement</p>
+                <ul className="space-y-1">
+                  {report.reviewPoint.ifNoImprovement.map((m, i) => (
+                    <li key={i} className="flex gap-2 font-body-md text-on-surface-variant">
+                      <span className="text-secondary">•</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </Section>
 
         {/* Limitations */}
         <div className="bg-surface-container-low border border-outline-variant p-6 rounded-xl mb-stack-lg">
@@ -299,7 +342,6 @@ export function ReportView({
             <span className="material-symbols-outlined text-xl">rate_review</span>
             Feedback
           </Link>
-          {/* Respond to agreements button hidden until feature is ready */}
         </div>
       </div>
     </>
@@ -321,7 +363,7 @@ function Section({
 }) {
   return (
     <section className={`${primary ? 'bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/30' : ''} mb-stack-lg`}>
-      <h3 className={`font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2 ${primary ? '' : ''}`}>
+      <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
         <span
           className="material-symbols-outlined text-primary"
           style={iconFill ? { fontVariationSettings: "'FILL' 1" } : undefined}
@@ -335,84 +377,54 @@ function Section({
   )
 }
 
-function PerspectiveCard({
+function RecognitionCard({
   name,
-  perspective,
+  recognition,
   color,
+  yourName: _yourName,
 }: {
   name: string
-  perspective: SharedReport['initiatorPerspective']
+  recognition: SharedReport['initiatorRecognition']
   color: 'primary' | 'secondary'
+  yourName: string
 }) {
   const borderColor = color === 'primary' ? 'border-primary/40' : 'border-secondary/40'
   const labelColor = color === 'primary' ? 'text-primary' : 'text-secondary'
 
-  // OpenAI may return a plain string instead of a structured object
-  // Normalise — OpenAI uses inconsistent field names
-  const p = typeof perspective === 'string' ? { feelings: perspective } : perspective as unknown as Record<string, unknown>
-  const paraphrase = (p.paraphrase || p.feelings || p.summary || '') as string
-  const feelings = toStringArray((p.coreFeelings ?? p.feelings_list ?? []) as string | string[])
-  const coreNeed = (p.coreNeed || p.need || '') as string
-  const interpretation = (p.interpretation || p.view || '') as string
-  const contribution = (p.acknowledgedContribution || p.contribution || '') as string
-
   return (
-    <div className={`relative overflow-hidden bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
+    <div className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderColor}`}>
       <div className={`flex items-center gap-2 mb-3 ${labelColor}`}>
         <span className="material-symbols-outlined">person</span>
         <span className="font-label-sm uppercase tracking-wider">{name}</span>
       </div>
-      {paraphrase && <p className="italic text-on-surface-variant font-body-md mb-3">{paraphrase}</p>}
-      {feelings.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {feelings.map((f, i) => (
-            <span key={i} className="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-sm">{f}</span>
+      {recognition.validConcerns.length > 0 && (
+        <div className="mb-3">
+          <p className={`font-label-sm uppercase mb-1 ${labelColor}`}>Valid concerns</p>
+          <ul className="space-y-1">
+            {recognition.validConcerns.map((c, i) => (
+              <li key={i} className="font-body-md text-on-surface-variant">• {c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {recognition.coreNeeds.length > 0 && (
+        <div className="mb-3">
+          <p className={`font-label-sm uppercase mb-1 ${labelColor}`}>Core needs</p>
+          <ul className="space-y-1">
+            {recognition.coreNeeds.map((n, i) => (
+              <li key={i} className="font-body-md text-on-surface-variant">• {n}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {recognition.acknowledgementAlreadyOffered.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-outline-variant/20">
+          <p className="font-label-sm text-outline uppercase mb-1">Already offered</p>
+          {recognition.acknowledgementAlreadyOffered.map((a, i) => (
+            <p key={i} className="font-body-md text-on-surface-variant">• {a}</p>
           ))}
         </div>
       )}
-      {interpretation && (
-        <p className="font-body-md text-on-surface-variant mb-2"><span className={`font-medium ${labelColor}`}>Interpretation: </span>{interpretation}</p>
-      )}
-      {contribution && (
-        <p className="font-body-md text-on-surface-variant mb-2"><span className="font-medium text-outline">Acknowledged: </span>{contribution}</p>
-      )}
-      {coreNeed && (
-        <div className="mt-4 pt-4 border-t border-outline-variant/20">
-          <p className={`text-sm font-medium ${labelColor}`}>Core Need: {coreNeed}</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function NeedsCard({ title, needs, color }: { title: string; needs: string[]; color: 'primary' | 'secondary' }) {
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <h3 className={`font-label-md font-bold mb-3 ${color === 'primary' ? 'text-primary' : 'text-secondary'}`}>{title}</h3>
-      <ul className="space-y-2">
-        {needs.map((n, i) => (
-          <li key={i} className="flex gap-2 font-body-md text-on-surface-variant">
-            <span className="text-secondary mt-0.5">•</span>
-            {n}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function AccountabilityCard({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="bg-surface-container-low p-6 rounded-xl">
-      <h3 className="font-label-md font-bold mb-3 text-on-surface">{title}</h3>
-      <ul className="space-y-2">
-        {items.map((item, i) => (
-          <li key={i} className="flex gap-2 font-body-md text-on-surface-variant">
-            <span className="material-symbols-outlined text-primary text-sm mt-0.5">arrow_forward</span>
-            {item}
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }

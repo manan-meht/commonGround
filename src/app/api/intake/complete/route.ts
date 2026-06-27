@@ -184,9 +184,7 @@ export async function POST(req: NextRequest) {
                 analysis_completed_at: new Date().toISOString(),
               }).eq('id', caseId)
 
-              const agreements = Array.isArray(report.possibleAgreements)
-                ? report.possibleAgreements
-                : [report.possibleAgreements]
+              const agreements = report.workingAgreements.map((w) => w.agreement)
               if (agreements.length > 0) {
                 await db.from('agreements').insert(
                   agreements.map((text: string) => ({

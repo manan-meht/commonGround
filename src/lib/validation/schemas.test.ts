@@ -3,10 +3,7 @@ import { CreateCaseSchema, IntakeMessageSchema, IntakeCompleteSchema } from './s
 
 describe('CreateCaseSchema', () => {
   const valid = {
-    initiatorName: 'Alice',
-    initiatorContact: 'alice@example.com',
     recipientName: 'Bob',
-    recipientPhone: '+442071234567',
     topic: 'Shared holiday plans',
   }
 
@@ -15,17 +12,43 @@ describe('CreateCaseSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('normalises UK phone to E.164', () => {
-    const result = CreateCaseSchema.safeParse({ ...valid, recipientPhone: '+44 207 123 4567' })
+  it('accepts valid input with optional relationship', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, relationship: 'friend' })
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.recipientPhone).toBe('+442071234567')
+      expect(result.data.relationship).toBe('friend')
     }
   })
 
-  it('rejects invalid phone number', () => {
-    const result = CreateCaseSchema.safeParse({ ...valid, recipientPhone: 'not-a-phone' })
+  it('accepts input without relationship (optional)', () => {
+    const result = CreateCaseSchema.safeParse(valid)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.relationship).toBeUndefined()
+    }
+  })
+
+  it('rejects invalid relationship value', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, relationship: 'enemy' })
     expect(result.success).toBe(false)
+  })
+
+  it('rejects empty recipient name', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, recipientName: '' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects whitespace-only recipient name', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, recipientName: '   ' })
+    expect(result.success).toBe(false)
+  })
+
+  it('trims whitespace from recipient name', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, recipientName: '  Bob  ' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.recipientName).toBe('Bob')
+    }
   })
 
   it('rejects empty topic', () => {
@@ -33,14 +56,40 @@ describe('CreateCaseSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('rejects topic over 500 chars', () => {
-    const result = CreateCaseSchema.safeParse({ ...valid, topic: 'x'.repeat(501) })
+  it('rejects topic under 5 chars', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, topic: 'Hi' })
     expect(result.success).toBe(false)
   })
 
-  it('rejects empty initiator name', () => {
-    const result = CreateCaseSchema.safeParse({ ...valid, initiatorName: '' })
+  it('rejects topic over 120 chars', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, topic: 'x'.repeat(121) })
     expect(result.success).toBe(false)
+  })
+
+  it('accepts topic at exactly 120 chars', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, topic: 'x'.repeat(120) })
+    expect(result.success).toBe(true)
+  })
+
+  it('trims whitespace from topic', () => {
+    const result = CreateCaseSchema.safeParse({ ...valid, topic: '  Shared holiday plans  ' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.topic).toBe('Shared holiday plans')
+    }
+  })
+
+  it('does not accept initiatorName field (removed)', () => {
+    // initiatorName is now server-derived — it should be ignored if supplied
+    const result = CreateCaseSchema.safeParse({ ...valid, initiatorName: 'Alice' })
+    // Schema should still succeed (extra fields are stripped by Zod by default)
+    expect(result.success).toBe(true)
+  })
+
+  it('does not require recipientPhone (removed)', () => {
+    // No recipientPhone in valid input — should still pass
+    const result = CreateCaseSchema.safeParse(valid)
+    expect(result.success).toBe(true)
   })
 })
 

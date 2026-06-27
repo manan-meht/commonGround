@@ -31,6 +31,15 @@ export type NotificationStatus = 'queued' | 'sent' | 'delivered' | 'failed'
 
 export type AgreementResponse = 'agreed' | 'needs_modification' | 'not_agreed'
 
+export type RelationshipType =
+  | 'partner_or_spouse'
+  | 'family_member'
+  | 'friend'
+  | 'colleague'
+  | 'business_partner'
+  | 'manager_or_employee'
+  | 'other'
+
 export interface DbCase {
   id: string
   public_reference: string
@@ -41,7 +50,8 @@ export interface DbCase {
   initiator_email: string | null
   initiator_phone: string | null
   recipient_email: string | null
-  recipient_phone: string
+  recipient_phone: string | null
+  relationship: RelationshipType | null
   consent_version: string
   invitation_token_hash: string | null
   invite_expires_at: string | null
@@ -144,51 +154,91 @@ export interface DbAuditEvent {
 // ─── Shared Report (stored in analyses.structured_result JSONB) ───────────────
 export interface SharedReport {
   reportTitle: string
-  neutralOverview: string
-  agreedFacts: string[]
-  disputedInterpretations: DisputedInterpretation[]
-  initiatorPerspective: PerspectiveSummary
-  recipientPerspective: PerspectiveSummary
-  pointsOfAgreement: string[]
+  bottomLine: string
   sharedGoals: string[]
-  misunderstandings: string[]
-  intentionVsImpact: IntentionVsImpact[]
-  initiatorNeeds: string[]
-  recipientNeeds: string[]
-  initiatorAccountability: string[]
-  recipientAccountability: string[]
-  recommendedNextSteps: NextStep[]
-  suggestedOpeningScript: string
-  conversationGuidelines: string[]
-  possibleAgreements: string[]
-  unresolvedIssues: string[]
+  initiatorRecognition: PerspectiveRecognition
+  recipientRecognition: PerspectiveRecognition
+  behaviouralAssessments: BehaviouralAssessment[]
+  disputedOrUnknownPoints: DisputedPoint[]
+  escalationCycle: EscalationStep[]
+  repairsRequired: Repair[]
+  actionPlan: ActionStep[]
+  suggestedWords: SuggestedWords[]
+  workingAgreements: WorkingAgreement[]
+  reviewPoint: ReviewPoint
   professionalSupportSuggestion: string | null
   safetyCategory: SafetyCategory
   safetyExplanation: string
   reportLimitations: string
 }
 
-export interface DisputedInterpretation {
-  event: string
+export interface PerspectiveRecognition {
+  validConcerns: string[]
+  importantContext: string[]
+  coreNeeds: string[]
+  acknowledgementAlreadyOffered: string[]
+}
+
+export interface BehaviouralAssessment {
+  owner: 'initiator' | 'recipient' | 'both'
+  behaviour: string
+  evidenceStatus: 'agreed' | 'acknowledged_by_actor' | 'reported_by_both' | 'reported_by_one' | 'disputed' | 'inference'
+  assessment: 'not_acceptable' | 'needs_change' | 'reasonable' | 'cannot_determine'
+  directFinding: string
+  impact: string
+  requiredChange: string | null
+  requiredRepair: string | null
+}
+
+export interface DisputedPoint {
+  issue: string
   initiatorView: string
   recipientView: string
+  evidenceStatus: 'disputed'
+  fairConclusion: string
 }
 
-export interface PerspectiveSummary {
-  coreFeelings: string[]
-  mainConcerns: string[]
-  coreNeed: string
-  paraphrase: string
+export interface EscalationStep {
+  step: number
+  actor: 'initiator' | 'recipient' | 'both' | 'context'
+  triggerOrInterpretation: string
+  response: string
+  impactOnCycle: string
 }
 
-export interface IntentionVsImpact {
-  actor: 'initiator' | 'recipient'
-  intendedMessage: string
-  perceivedImpact: string
-}
-
-export interface NextStep {
-  action: string
+export interface Repair {
   owner: 'initiator' | 'recipient' | 'both'
-  timeframe: string | null
+  owedTo: string
+  reason: string
+  acknowledgementNeeded: string
+  actionNeeded: string
+  mustNotRequire: string
+  timeframe: string
+}
+
+export interface ActionStep {
+  priority: number
+  owner: 'initiator' | 'recipient' | 'both'
+  action: string
+  timeframe: string
+  successMeasure: string
+}
+
+export interface SuggestedWords {
+  speaker: 'initiator' | 'recipient'
+  purpose: string
+  script: string
+}
+
+export interface WorkingAgreement {
+  agreement: string
+  appliesTo: 'initiator' | 'recipient' | 'both'
+  implementation: string
+  breachResponse: string
+}
+
+export interface ReviewPoint {
+  timeframe: string
+  measuresOfProgress: string[]
+  ifNoImprovement: string[]
 }

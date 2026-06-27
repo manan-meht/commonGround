@@ -84,71 +84,75 @@ export function InvitationView({ token }: { token: string }) {
 
   if (!inviteData) return null
 
+  const { initiatorName, topic } = inviteData
+
+  const reassurances = [
+    `Joining does not mean you agree with ${initiatorName}.`,
+    'Your raw responses will not be shown to the other participant.',
+    'Urushi Labs does not automatically assume the person who started the conversation is correct.',
+    'You will be able to review the summary of your perspective before submitting it.',
+  ]
+
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
       <main className="flex-grow">
+
         {/* Hero */}
-        <section className="relative px-margin-mobile pt-stack-md pb-stack-lg overflow-hidden">
-          <div className="relative z-10 max-w-container-max mx-auto text-center flex flex-col items-center">
+        <section className="px-margin-mobile pt-stack-md pb-stack-sm">
+          <div className="max-w-md mx-auto text-center flex flex-col items-center">
             <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mb-base shadow-ambient">
-              <span className="material-symbols-outlined text-white text-4xl">mail</span>
+              <span className="material-symbols-outlined text-white text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>forum</span>
             </div>
             <h1 className="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-stack-sm">
-              You&apos;ve been invited…
+              {initiatorName} has invited you to a guided conversation
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
-              <strong>{inviteData.initiatorName}</strong> would like to reach a resolution with you.
-            </p>
           </div>
         </section>
 
-        {/* Topic card */}
-        <section className="px-margin-mobile -mt-stack-lg pb-stack-md">
+        {/* Topic */}
+        <section className="px-margin-mobile pb-stack-md">
           <div className="max-w-md mx-auto bg-surface-container-lowest rounded-xl p-stack-md shadow-ambient border border-outline-variant">
-            <div className="flex items-center gap-base mb-stack-sm">
-              <span className="material-symbols-outlined text-secondary">forum</span>
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">The Topic</span>
-            </div>
-            <h2 className="font-headline-md text-headline-md text-on-surface mb-base">
-              {inviteData.topic}
-            </h2>
-            <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-              {inviteData.initiatorName} is seeking your perspective to ensure mutual understanding and
-              find a constructive path forward.
-            </p>
+            <p className="font-label-sm text-outline uppercase tracking-widest mb-2">Conversation topic</p>
+            <p className="font-headline-md text-headline-md text-on-surface">{topic}</p>
           </div>
         </section>
 
-        {/* Privacy + how it works */}
-        <section className="px-margin-mobile py-stack-md">
-          <div className="max-w-md mx-auto grid grid-cols-1 gap-base">
-            <div className="bg-secondary-container/30 rounded-xl p-stack-sm flex gap-stack-sm border border-secondary-container">
-              <span className="material-symbols-outlined text-secondary shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
-              <div>
-                <h3 className="font-label-md text-label-md text-on-secondary-container font-bold">Privacy Guaranteed</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                  You cannot see {inviteData.initiatorName}&apos;s raw input, and they cannot see yours. The AI
-                  facilitator analyses both perspectives independently to find common ground.
-                </p>
-              </div>
+        {/* What Urushi does */}
+        <section className="px-margin-mobile pb-stack-md">
+          <div className="max-w-md mx-auto space-y-3">
+            <p className="font-body-md text-on-surface-variant">
+              Urushi Labs gives each person an equal opportunity to share their perspective privately before preparing a shared report.
+            </p>
+
+            <div className="bg-surface-container-low rounded-xl p-5 space-y-3">
+              {reassurances.map((point, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <p className="font-body-md text-on-surface-variant">{point}</p>
+                </div>
+              ))}
             </div>
-            <div className="bg-surface-container-low rounded-xl p-stack-sm">
-              <h3 className="font-label-sm text-label-sm text-outline uppercase mb-stack-sm px-base">How it works</h3>
-              <div className="space-y-4 px-base">
-                {[
-                  'You share your perspective privately with the AI.',
-                  'The facilitator identifies shared goals and tensions.',
-                  'A collaborative resolution plan is generated for both of you.',
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-stack-sm">
-                    <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
-                      <span className="font-label-md text-label-md text-on-surface">{i + 1}</span>
-                    </div>
-                    <p className="font-body-md text-body-md text-on-surface-variant pt-1">{step}</p>
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="px-margin-mobile pb-stack-lg">
+          <div className="max-w-md mx-auto bg-surface-container-low rounded-xl p-stack-sm">
+            <h3 className="font-label-sm text-outline uppercase mb-stack-sm px-base tracking-widest">How it works</h3>
+            <div className="space-y-4 px-base">
+              {[
+                'You share your perspective privately with the AI — the other person does not see what you write.',
+                'The AI facilitator reviews both accounts independently.',
+                'A shared report is prepared for both of you to read together.',
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-stack-sm">
+                  <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+                    <span className="font-label-md text-label-md text-on-surface">{i + 1}</span>
                   </div>
-                ))}
-              </div>
+                  <p className="font-body-md text-on-surface-variant pt-1">{step}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -157,14 +161,10 @@ export function InvitationView({ token }: { token: string }) {
         <section className="px-margin-mobile pb-stack-lg">
           <div className="max-w-md mx-auto bg-error-container/20 border border-error-container rounded-xl p-4 flex gap-3">
             <span className="material-symbols-outlined text-error shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-            <div>
-              <p className="font-label-sm text-on-error-container font-bold uppercase mb-1">Safety Notice</p>
-              <p className="font-body-md text-[14px] text-on-error-container/80 leading-tight">
-                Urushi Labs is an AI communication tool, not a substitute for legal advice or
-                professional support. If you feel unsafe, please contact emergency services immediately.
-                You can learn more on our <a href="/safety" className="underline">safety page</a>.
-              </p>
-            </div>
+            <p className="font-body-md text-[14px] text-on-error-container/80 leading-tight">
+              Urushi Labs is an AI communication tool, not a substitute for legal advice or professional support. If you feel unsafe, please contact emergency services or visit our{' '}
+              <a href="/safety" className="underline">safety page</a>.
+            </p>
           </div>
         </section>
       </main>
@@ -183,12 +183,15 @@ export function InvitationView({ token }: { token: string }) {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Initialising safe space…
+                Setting up your private space…
               </span>
-            ) : 'Share my perspective'}
+            ) : 'Share my perspective privately'}
           </button>
-          <a href="/safety" className="text-center w-full text-secondary py-3 font-label-md text-label-md hover:bg-secondary/5 rounded-xl transition-colors">
-            Learn more about safety
+          <a
+            href="/safety"
+            className="text-center w-full text-secondary py-3 font-label-md text-label-md hover:bg-secondary/5 rounded-xl transition-colors"
+          >
+            How does this work?
           </a>
         </div>
       </div>

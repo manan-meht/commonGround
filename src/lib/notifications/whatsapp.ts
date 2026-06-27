@@ -86,22 +86,10 @@ export class WhatsAppProvider implements NotificationProvider {
   }
 }
 
-export function buildWhatsAppShareUrl(payload: {
-  recipientPhone: string
-  initiatorName: string
-  topic: string
-  inviteLink: string
-}): string {
-  const message = [
-    `Hi! ${payload.initiatorName} has invited you to a private, AI-facilitated conversation on Urushi Labs about: "${payload.topic}".`,
-    '',
-    'This is a private, neutral process. Your perspective is kept private — you share it directly with the AI, not with them. A shared summary is only generated after both of you have participated.',
-    '',
-    `Join here: ${payload.inviteLink}`,
-    '',
-    'Urushi Labs is an AI communication tool, not a substitute for legal or professional advice.',
-  ].join('\n')
-
-  const phone = payload.recipientPhone.replace(/\D/g, '')
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+/**
+ * Builds a phone-free WhatsApp share URL with a pre-filled message.
+ * The user selects the recipient inside WhatsApp.
+ */
+export function buildWhatsAppShareUrl(message: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(message)}`
 }

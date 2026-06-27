@@ -4,7 +4,6 @@ import { getSession } from '@/lib/auth/session'
 import { getServiceClient } from '@/lib/db/client'
 import { WaitingView } from './WaitingView'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
-import { buildWhatsAppShareUrl } from '@/lib/notifications/whatsapp'
 
 export const metadata: Metadata = {
   title: 'Waiting — Urushi Labs',
@@ -26,7 +25,7 @@ export default async function WaitingPage({ params }: PageProps) {
   const db = getServiceClient()
   const { data: caseRow } = await db
     .from('cases')
-    .select('id, topic, status, initiator_name, recipient_name, recipient_phone, invitation_token_hash')
+    .select('id, topic, status, initiator_name, recipient_name, invitation_token_hash')
     .eq('id', session.caseId)
     .single()
 
@@ -43,19 +42,12 @@ export default async function WaitingPage({ params }: PageProps) {
     .eq('case_id', session.caseId)
     .not('intake_completed_at', 'is', null)
 
+  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
   const inviteLink = session.inviteToken
-    ? `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://commonground.mandarth-manan.workers.dev'}/invite/${session.inviteToken}`
+    ? `${appUrl}/invite/${session.inviteToken}`
     : undefined
 
-  const whatsAppUrl =
-    session.role === 'initiator' && inviteLink
-      ? buildWhatsAppShareUrl({
-          recipientPhone: caseRow.recipient_phone,
-          initiatorName: caseRow.initiator_name,
-          topic: caseRow.topic,
-          inviteLink,
-        })
-      : undefined
+  const emailSubject = `${caseRow.initiator_name} has invited you to a guided conversation`
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -66,10 +58,11 @@ export default async function WaitingPage({ params }: PageProps) {
         status={caseRow.status}
         topic={caseRow.topic}
         role={session.role}
+        initiatorName={caseRow.initiator_name}
         recipientName={caseRow.recipient_name}
         completedCount={count ?? 0}
-        whatsAppUrl={whatsAppUrl}
         inviteLink={inviteLink}
+        emailSubject={emailSubject}
       />
       <SiteFooter />
     </div>

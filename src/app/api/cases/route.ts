@@ -3,9 +3,9 @@ import { CreateCaseSchema } from '@/lib/validation/schemas'
 import { getServiceClient } from '@/lib/db/client'
 import { generateSecureToken, hashToken, generatePublicReference, inviteExpiresAt } from '@/lib/tokens'
 import { setSessionCookie } from '@/lib/auth/session'
-import { isEmail } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { consumeRoomCredit } from '@/lib/db/credits'
+import { extractFirstName } from '@/lib/invitation'
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -20,22 +20,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errors: parsed.error.flatten().fieldErrors }, { status: 422 })
   }
 
-  const {
-    initiatorName,
-    initiatorContact,
-    recipientName,
-    recipientPhone,
-    topic,
-    consentVersion,
-  } = parsed.data
-
-  const initiatorEmail = isEmail(initiatorContact) ? initiatorContact : null
-  const initiatorPhone = isEmail(initiatorContact) ? null : initiatorContact
+  const { recipientName, relationship, topic, consentVersion } = parsed.data
 
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
+
+    // Initiator identity comes from the authenticated account, not the form
+    const initiatorFullName: string =
+      (user.user_metadata?.['full_name'] as string | undefined) ??
+      user.email ??
+      'Unknown'
+    const initiatorName = extractFirstName(initiatorFullName)
+    const initiatorEmail = user.email ?? null
 
     // Check and consume a room credit (creates the free-room record on first use)
     const credited = await consumeRoomCredit(user.id)
@@ -66,8 +64,7 @@ export async function POST(req: NextRequest) {
         initiator_name: initiatorName,
         recipient_name: recipientName,
         initiator_email: initiatorEmail,
-        initiator_phone: initiatorPhone,
-        recipient_phone: recipientPhone,
+        relationship: relationship ?? null,
         consent_version: consentVersion,
         invitation_token_hash: invitationTokenHash,
         invite_expires_at: expiresAt.toISOString(),
@@ -89,7 +86,6 @@ export async function POST(req: NextRequest) {
         role: 'initiator',
         display_name: initiatorName,
         email: initiatorEmail,
-        phone: initiatorPhone,
         access_token_hash: initiatorTokenHash,
         consented_at: new Date().toISOString(),
         user_id: user.id,
@@ -121,10 +117,6 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
     const inviteLink = `${appUrl}/invite/${invitationToken}`
-
-    if (process.env['DEMO_MODE'] === 'true') {
-      console.warn(`[DEMO] Invitation link for ${recipientName}: ${inviteLink}`)
-    }
 
     return NextResponse.json({
       caseReference: publicReference,
