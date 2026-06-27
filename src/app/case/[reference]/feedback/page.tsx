@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
+import { getUser } from '@/lib/supabase/server'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import { FeedbackForm } from './FeedbackForm'
 
@@ -15,13 +16,13 @@ interface PageProps {
 
 export default async function FeedbackPage({ params }: PageProps) {
   const { reference } = await params
-  const session = await getSession()
+  const [session, user] = await Promise.all([getSession(), getUser()])
 
   if (!session || session.caseReference !== reference) redirect('/')
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+      <SiteHeader userEmail={user?.email} />
       <main className="flex-grow max-w-2xl mx-auto px-margin-mobile py-stack-lg w-full">
         <h1 className="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-2">
           Report Feedback

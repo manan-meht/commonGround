@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
+import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
 import { WaitingView } from './WaitingView'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
@@ -16,7 +17,7 @@ interface PageProps {
 
 export default async function WaitingPage({ params }: PageProps) {
   const { reference } = await params
-  const session = await getSession()
+  const [session, user] = await Promise.all([getSession(), getUser()])
 
   if (!session || session.caseReference !== reference) {
     redirect('/')
@@ -51,7 +52,7 @@ export default async function WaitingPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+      <SiteHeader userEmail={user?.email} />
       <WaitingView
         caseReference={reference}
         caseId={session.caseId}

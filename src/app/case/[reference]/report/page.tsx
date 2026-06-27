@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
+import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
 import { ReportView } from './ReportView'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
@@ -17,7 +18,7 @@ interface PageProps {
 
 export default async function ReportPage({ params }: PageProps) {
   const { reference } = await params
-  const session = await getSession()
+  const [session, user] = await Promise.all([getSession(), getUser()])
 
   if (!session || session.caseReference !== reference) {
     redirect('/')
@@ -54,7 +55,7 @@ export default async function ReportPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+      <SiteHeader userEmail={user?.email} />
       <ReportView
         report={analysis.structured_result as SharedReport}
         agreements={(agreements as DbAgreement[]) ?? []}
