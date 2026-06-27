@@ -51,7 +51,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-surface">
-      <SiteHeader />
+      <SiteHeader userEmail={user?.email} />
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
