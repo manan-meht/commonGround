@@ -18,27 +18,65 @@ interface Props {
   role: 'initiator' | 'recipient'
 }
 
-interface SummaryData {
-  whatHappened?: string
-  emotionalImpact?: string
-  theirNeeds?: string[]
-  theirInterpretation?: string
-  whatOtherPartyMayHaveExperienced?: string
-  theirContribution?: string
-  desiredOutcome?: string
-  keyThemes?: string[]
+// Matches IntakeSummarySchema from lib/ai/intakePrompt.ts
+interface SpecificIncident {
+  event: string
+  participantActions: string[]
+  otherPartyActions: string[]
+  sequence: string
 }
 
-const SUMMARY_FIELDS: { key: keyof SummaryData; label: string; icon: string }[] = [
-  { key: 'whatHappened', label: 'What happened', icon: 'description' },
-  { key: 'emotionalImpact', label: 'Emotional impact', icon: 'favorite' },
-  { key: 'theirNeeds', label: 'Your needs', icon: 'volunteer_activism' },
-  { key: 'theirInterpretation', label: 'Your interpretation', icon: 'psychology' },
-  { key: 'whatOtherPartyMayHaveExperienced', label: "The other person's experience", icon: 'group' },
-  { key: 'theirContribution', label: 'Your contribution', icon: 'self_improvement' },
-  { key: 'desiredOutcome', label: 'Desired outcome', icon: 'flag' },
-  { key: 'keyThemes', label: 'Key themes', icon: 'label' },
-]
+interface AcknowledgedContribution {
+  behaviour: string
+  acknowledgement: string
+  willingnessToRepair: string
+}
+
+interface ThirdPartyImpact {
+  personOrRole: string
+  reportedImpact: string
+  requestedRepair: string
+}
+
+interface SummaryData {
+  conciseAccount?: string
+  specificIncidents?: SpecificIncident[]
+  recurringPatterns?: string[]
+  intentions?: string[]
+  reportedImpact?: string[]
+  needs?: string[]
+  acknowledgedContribution?: AcknowledgedContribution[]
+  claimsAboutOtherPartyIntent?: string[]
+  directRequests?: string[]
+  desiredOutcome?: string[]
+  nonNegotiables?: string[]
+  thirdPartiesAffected?: ThirdPartyImpact[]
+  uncertainOrInterpretivePoints?: string[]
+  safetySignals?: string[]
+}
+
+function StringList({ items, icon }: { items: string[]; icon: string }) {
+  if (!items.length) return null
+  return (
+    <ul className="space-y-1 mt-1">
+      {items.map((item, i) => (
+        <li key={i} className="flex items-start gap-2 font-body-md text-on-surface">
+          <span className="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function SummarySection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border border-outline-variant p-4">
+      <p className="text-label-sm font-medium text-primary uppercase tracking-wide mb-2">{label}</p>
+      {children}
+    </div>
+  )
+}
 
 function SummaryCard({ summary }: { summary: string }) {
   let parsed: SummaryData | null = null
@@ -58,34 +96,90 @@ function SummaryCard({ summary }: { summary: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {SUMMARY_FIELDS.map(({ key, label, icon }) => {
-        const value = parsed![key]
-        if (!value || (Array.isArray(value) && value.length === 0)) return null
-        return (
-          <div key={key} className="bg-white rounded-xl border border-outline-variant p-4 flex gap-3">
-            <span className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-            <div className="flex-1">
-              <p className="text-label-sm font-medium text-primary uppercase tracking-wide mb-1">{label}</p>
-              {Array.isArray(value) ? (
-                <ul className="list-disc list-inside space-y-0.5">
-                  {value.map((item, i) => (
-                    <li key={i} className="font-body-md text-on-surface">{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="font-body-md text-on-surface">{value}</p>
-              )}
-            </div>
+      {parsed.conciseAccount && (
+        <SummarySection label="What happened">
+          <p className="font-body-md text-on-surface">{parsed.conciseAccount}</p>
+        </SummarySection>
+      )}
+
+      {parsed.specificIncidents && parsed.specificIncidents.length > 0 && (
+        <SummarySection label="Specific incidents">
+          <div className="space-y-3">
+            {parsed.specificIncidents.map((inc, i) => (
+              <div key={i} className={i > 0 ? 'pt-3 border-t border-outline-variant/40' : ''}>
+                <p className="font-body-md font-medium text-on-surface mb-1">{inc.event}</p>
+                {inc.sequence && <p className="text-label-sm text-on-surface-variant mb-1">{inc.sequence}</p>}
+              </div>
+            ))}
           </div>
-        )
-      })}
+        </SummarySection>
+      )}
+
+      {parsed.reportedImpact && parsed.reportedImpact.length > 0 && (
+        <SummarySection label="Impact on you">
+          <StringList items={parsed.reportedImpact} icon="favorite" />
+        </SummarySection>
+      )}
+
+      {parsed.needs && parsed.needs.length > 0 && (
+        <SummarySection label="Your needs">
+          <StringList items={parsed.needs} icon="volunteer_activism" />
+        </SummarySection>
+      )}
+
+      {parsed.desiredOutcome && parsed.desiredOutcome.length > 0 && (
+        <SummarySection label="What you want">
+          <StringList items={parsed.desiredOutcome} icon="flag" />
+        </SummarySection>
+      )}
+
+      {parsed.directRequests && parsed.directRequests.length > 0 && (
+        <SummarySection label="Your requests">
+          <StringList items={parsed.directRequests} icon="arrow_forward" />
+        </SummarySection>
+      )}
+
+      {parsed.acknowledgedContribution && parsed.acknowledgedContribution.length > 0 && (
+        <SummarySection label="Your acknowledged contribution">
+          {parsed.acknowledgedContribution.map((ac, i) => (
+            <div key={i} className="font-body-md text-on-surface mb-1">
+              <span className="font-medium">{ac.behaviour}</span>
+              {ac.acknowledgement && <span className="text-on-surface-variant"> — {ac.acknowledgement}</span>}
+            </div>
+          ))}
+        </SummarySection>
+      )}
+
+      {parsed.recurringPatterns && parsed.recurringPatterns.length > 0 && (
+        <SummarySection label="Recurring patterns">
+          <StringList items={parsed.recurringPatterns} icon="refresh" />
+        </SummarySection>
+      )}
+
+      {parsed.nonNegotiables && parsed.nonNegotiables.length > 0 && (
+        <SummarySection label="Non-negotiables">
+          <StringList items={parsed.nonNegotiables} icon="block" />
+        </SummarySection>
+      )}
+
+      {parsed.uncertainOrInterpretivePoints && parsed.uncertainOrInterpretivePoints.length > 0 && (
+        <SummarySection label="Uncertain or interpretive points">
+          <StringList items={parsed.uncertainOrInterpretivePoints} icon="help" />
+        </SummarySection>
+      )}
+
+      {parsed.safetySignals && parsed.safetySignals.length > 0 && (
+        <SummarySection label="Safety signals noted">
+          <StringList items={parsed.safetySignals} icon="warning" />
+        </SummarySection>
+      )}
     </div>
   )
 }
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: "Hello. I'm here to help you prepare your private perspective. This is a private space — nothing you share here will be seen directly by the other participant. To get started, could you describe what happened from your perspective? Take your time.",
+  content: "Briefly tell me what happened in the most recent incident, what each person did, and what you most want to change. Three to six sentences is enough to get started.",
 }
 
 export function IntakeChat({ caseReference, topic, participantName }: Props) {
@@ -113,7 +207,10 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
           const data = await res.json() as { messages: Array<{role: string; content: string}> }
           if (data.messages && data.messages.length > 0) {
             setMessages(
-              data.messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+              data.messages.map((m) => ({
+                role: (m.role === 'participant' ? 'user' : 'assistant') as 'user' | 'assistant',
+                content: m.content,
+              }))
             )
           }
         }
@@ -148,15 +245,6 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
 
       if (data.message) {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.message! }])
-
-        // Check if AI is signalling it's ready to summarise
-        if (
-          data.message.toLowerCase().includes('ready to generate') ||
-          data.message.toLowerCase().includes('generate a summary') ||
-          data.message.toLowerCase().includes('ready to review')
-        ) {
-          void requestSummary()
-        }
       }
     } catch {
       setError('A network error occurred. Please try again.')
@@ -231,7 +319,7 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
   }
 
   const exchangeCount = messages.filter((m) => m.role === 'user').length
-  const progressPct = Math.min((exchangeCount / 10) * 100, 95)
+  const progressPct = Math.min((exchangeCount / 5) * 100, 95)
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-surface font-body-md text-on-surface antialiased">
@@ -260,7 +348,7 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
                 style={{ width: `${progressPct}%` }}
               />
             </div>
-            <span className="text-label-sm text-on-surface-variant whitespace-nowrap">{exchangeCount} of ~10</span>
+            <span className="text-label-sm text-on-surface-variant whitespace-nowrap">{exchangeCount} exchange{exchangeCount !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </header>
@@ -315,16 +403,15 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
             {error && (
               <p className="text-error text-label-md" role="alert">{error}</p>
             )}
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar">
-              {exchangeCount >= 6 && (
-                <button
-                  onClick={requestSummary}
-                  className="whitespace-nowrap px-4 py-2 bg-primary-container/20 text-on-primary-container font-label-md text-label-md rounded-full border border-primary/20 hover:bg-primary-container/30 transition-all"
-                >
-                  I&apos;m ready to review a summary
-                </button>
-              )}
-            </div>
+            {exchangeCount >= 1 && (
+              <button
+                onClick={() => void requestSummary()}
+                disabled={sending}
+                className="w-full py-3 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-xl border border-primary/20 hover:bg-primary-container/80 transition-all disabled:opacity-50"
+              >
+                I&apos;m ready — generate my summary
+              </button>
+            )}
             <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
               <textarea
                 ref={textareaRef}
@@ -354,10 +441,17 @@ export function IntakeChat({ caseReference, topic, participantName }: Props) {
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-4 border-b border-outline-variant bg-surface shrink-0">
             <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>summarize</span>
-            <div>
+            <div className="flex-1">
               <h2 className="font-headline-sm text-on-surface leading-tight">Review your summary</h2>
-              <p className="text-label-sm text-on-surface-variant">Check the details below, then submit</p>
+              <p className="text-label-sm text-on-surface-variant">Does this accurately capture your perspective?</p>
             </div>
+            <button
+              onClick={() => { setShowSummaryStep(false); setSummary('') }}
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-sm text-label-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              Add more
+            </button>
           </div>
 
           {/* Scrollable body */}
