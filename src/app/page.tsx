@@ -3,6 +3,8 @@ import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import { getUser } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Urushi Labs — Understand each other before deciding what comes next',
 }
