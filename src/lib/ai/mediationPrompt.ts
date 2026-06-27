@@ -316,21 +316,99 @@ For possible_coercion_or_abuse, possible_self_harm_or_violence, possible_child_s
 
 # Output discipline
 
-Return one JSON object that conforms exactly to the supplied schema.
+Return one JSON object with exactly these top-level keys (no others):
 
-Report priorities, in order:
+{
+  "reportTitle": string,
+  "bottomLine": string,
+  "sharedGoals": string[],
+  "initiatorRecognition": {
+    "validConcerns": string[],
+    "importantContext": string[],
+    "coreNeeds": string[],
+    "acknowledgementAlreadyOffered": string[]
+  },
+  "recipientRecognition": {
+    "validConcerns": string[],
+    "importantContext": string[],
+    "coreNeeds": string[],
+    "acknowledgementAlreadyOffered": string[]
+  },
+  "behaviouralAssessments": [{
+    "owner": "initiator"|"recipient"|"both",
+    "behaviour": string,
+    "evidenceStatus": "agreed"|"acknowledged_by_actor"|"reported_by_both"|"reported_by_one"|"disputed"|"inference",
+    "assessment": "not_acceptable"|"needs_change"|"reasonable"|"cannot_determine",
+    "directFinding": string,
+    "impact": string,
+    "requiredChange": string|null,
+    "requiredRepair": string|null
+  }],
+  "disputedOrUnknownPoints": [{
+    "issue": string,
+    "initiatorView": string,
+    "recipientView": string,
+    "evidenceStatus": "disputed",
+    "fairConclusion": string
+  }],
+  "escalationCycle": [{
+    "step": number,
+    "actor": "initiator"|"recipient"|"both"|"context",
+    "triggerOrInterpretation": string,
+    "response": string,
+    "impactOnCycle": string
+  }],
+  "repairsRequired": [{
+    "owner": "initiator"|"recipient"|"both",
+    "owedTo": string,
+    "reason": string,
+    "acknowledgementNeeded": string,
+    "actionNeeded": string,
+    "mustNotRequire": string,
+    "timeframe": string
+  }],
+  "actionPlan": [{
+    "priority": number,
+    "owner": "initiator"|"recipient"|"both",
+    "action": string,
+    "timeframe": string,
+    "successMeasure": string
+  }],
+  "suggestedWords": [{
+    "speaker": "initiator"|"recipient",
+    "purpose": string,
+    "script": string
+  }],
+  "workingAgreements": [{
+    "agreement": string,
+    "appliesTo": "initiator"|"recipient"|"both",
+    "implementation": string,
+    "breachResponse": string
+  }],
+  "reviewPoint": {
+    "timeframe": string,
+    "measuresOfProgress": string[],
+    "ifNoImprovement": string[]
+  },
+  "professionalSupportSuggestion": string|null,
+  "safetyCategory": "ordinary_conflict"|"high_conflict"|"possible_coercion_or_abuse"|"possible_self_harm_or_violence"|"possible_child_safety_issue"|"legal_or_professional_support_needed",
+  "safetyExplanation": string,
+  "reportLimitations": string
+}
 
-1. A concise bottom line;
-2. What is valid or understandable in each perspective;
-3. Clear evidence-tagged behavioural assessments;
-4. Disputed or unknown points;
-5. The escalation cycle;
-6. Repairs required, including repairs to third parties;
-7. A prioritised and measurable action plan;
-8. Suggested words for each participant;
-9. Concrete working agreements;
-10. A review point and what to do if the pattern does not improve;
-11. Safety classification and limitations.
+Report section order to follow:
+
+1. reportTitle + bottomLine + sharedGoals
+2. initiatorRecognition + recipientRecognition
+3. behaviouralAssessments
+4. disputedOrUnknownPoints
+5. escalationCycle
+6. repairsRequired
+7. actionPlan
+8. suggestedWords
+9. workingAgreements
+10. reviewPoint
+11. professionalSupportSuggestion + safetyCategory + safetyExplanation + reportLimitations
 
 Do not repeat the same observation in multiple sections unless the repetition is necessary to connect a finding to a specific action.
 
