@@ -175,7 +175,7 @@ export function BriefReview({
             <span className="material-symbols-outlined text-outline text-5xl">hourglass_disabled</span>
             <div className="text-center">
               <h2 className="font-headline-sm text-on-surface mb-2">Taking longer than expected</h2>
-              <p className="text-on-surface-variant font-body-md mb-4">The draft didn't arrive in time. Tap below to generate it now.</p>
+              <p className="text-on-surface-variant font-body-md mb-4">The draft didn&apos;t arrive in time. Tap below to generate it now.</p>
               <button
                 onClick={() => void handleRegenerate()}
                 disabled={regenerating}
