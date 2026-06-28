@@ -68,6 +68,8 @@ export function BriefReview({
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [inviteLink, setInviteLink] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [editedMessage, setEditedMessage] = useState<string | null>(null)
 
   useEffect(() => {
     setInviteLink(sessionStorage.getItem('cg_invite_link') ?? '')
@@ -141,24 +143,30 @@ export function BriefReview({
     }
   }
 
+  function getActiveMessage() {
+    if (editedMessage !== null) return editedMessage
+    if (brief && inviteLink) return buildInviteMessage(initiatorName, recipientName, brief, inviteLink)
+    return null
+  }
+
   async function handleCopyMessage() {
-    if (!brief || !inviteLink) return
-    const message = buildInviteMessage(initiatorName, recipientName, brief, inviteLink)
+    const message = getActiveMessage()
+    if (!message) return
     await navigator.clipboard.writeText(message)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
 
   function handleShareWhatsApp() {
-    if (!brief || !inviteLink) return
-    const message = buildInviteMessage(initiatorName, recipientName, brief, inviteLink)
+    const message = getActiveMessage()
+    if (!message) return
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
   }
 
   function handleShareGmail() {
-    if (!brief || !inviteLink) return
+    const message = getActiveMessage()
+    if (!message) return
     const subject = `${initiatorName} has invited you to a private conversation`
-    const message = buildInviteMessage(initiatorName, recipientName, brief, inviteLink)
     const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`
     window.open(url, '_blank')
   }
@@ -201,26 +209,68 @@ export function BriefReview({
   }
 
   if (approvedAt) {
-    const inviteMessage = brief && inviteLink
+    const generatedMessage = brief && inviteLink
       ? buildInviteMessage(initiatorName, recipientName, brief, inviteLink)
       : null
+    const activeMessage = editedMessage ?? generatedMessage
 
     return (
       <main className="flex-1 w-full max-w-xl mx-auto px-4 py-8 flex flex-col gap-6">
-        <div className="bg-primary-container/30 border border-primary/20 rounded-2xl p-5 flex items-start gap-3">
-          <span className="material-symbols-outlined text-primary shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-          <div>
-            <p className="font-label-md text-on-surface font-semibold">Invitation ready to share</p>
-            <p className="text-label-sm text-on-surface-variant mt-1">Copy the message below and send it to {recipientName} however you like.</p>
-          </div>
+
+        <div>
+          <h1 className="font-headline-md text-on-surface mb-1">Invite {recipientName}</h1>
+          <p className="text-on-surface-variant font-body-md">
+            Your invitation is ready. Share it directly or edit the message first.
+          </p>
         </div>
 
-        {inviteMessage ? (
+        {activeMessage ? (
           <div className="bg-surface-container-low border border-outline-variant rounded-2xl overflow-hidden">
-            <div className="bg-secondary-container/20 px-5 py-3 border-b border-outline-variant flex items-center justify-between">
-              <p className="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">Message to send {recipientName}</p>
+            <div className="px-5 py-3 border-b border-outline-variant flex items-center justify-between">
+              <p className="font-label-sm text-on-surface-variant text-[11px] uppercase tracking-widest">
+                {editing ? 'Editing message' : 'Invitation message'}
+              </p>
+              {!editing ? (
+                <button
+                  onClick={() => { setEditing(true); setEditedMessage(activeMessage) }}
+                  className="flex items-center gap-1 text-label-sm text-primary hover:underline"
+                >
+                  <span className="material-symbols-outlined text-[15px]">edit</span>
+                  Edit
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => { setEditing(false); setEditedMessage(null) }}
+                    className="text-label-sm text-on-surface-variant hover:text-on-surface"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="flex items-center gap-1 text-label-sm text-primary font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">check</span>
+                    Done
+                  </button>
+                </div>
+              )}
             </div>
-            <pre className="p-5 font-body-md text-on-surface whitespace-pre-wrap leading-relaxed text-sm">{inviteMessage}</pre>
+
+            {editing ? (
+              <textarea
+                value={editedMessage ?? ''}
+                onChange={(e) => setEditedMessage(e.target.value)}
+                className="w-full p-5 font-body-md text-on-surface text-sm leading-relaxed bg-surface-container-low resize-none focus:outline-none min-h-[260px]"
+                autoFocus
+              />
+            ) : (
+              <div className="p-5 flex flex-col gap-3">
+                {activeMessage.split('\n\n').map((para, i) => (
+                  <p key={i} className="font-body-md text-on-surface text-sm leading-relaxed">{para}</p>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-5">
@@ -228,18 +278,18 @@ export function BriefReview({
           </div>
         )}
 
-        {inviteMessage && (
+        {activeMessage && (
           <div className="flex flex-col gap-3">
             <button
               onClick={() => void handleCopyMessage()}
               className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-4 rounded-xl font-label-md font-bold hover:bg-on-primary-fixed-variant transition-all active:scale-95"
             >
               <span className="material-symbols-outlined text-[18px]">{copied ? 'check' : 'content_copy'}</span>
-              {copied ? 'Copied to clipboard!' : 'Copy message'}
+              {copied ? 'Copied!' : 'Copy message'}
             </button>
 
             <p className="text-label-sm text-on-surface-variant text-center">
-              The message is pre-filled on WhatsApp and Gmail — just pick who to send it to.
+              Or send directly — the message is pre-filled.
             </p>
 
             <div className="grid grid-cols-2 gap-3">
