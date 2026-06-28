@@ -458,34 +458,52 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
                 I&apos;m ready — generate my summary
               </button>
             )}
+            {/* Microphone error states — shown as dismissible cards */}
             {recorder.error === 'permission-denied' && (
-              <div className="bg-error-container/20 border border-error-container rounded-xl p-4 flex gap-3" role="alert">
+              <div className="bg-error-container/20 border border-error-container rounded-xl p-4 flex gap-3" role="alert" aria-live="assertive">
                 <span className="material-symbols-outlined text-error shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>mic_off</span>
                 <div className="flex flex-col gap-1">
                   <p className="font-label-md font-medium text-on-surface">Microphone access is blocked</p>
                   <p className="font-body-md text-on-surface-variant text-sm">
-                    To use voice input, allow microphone access for this site in your browser settings, then try again.
+                    Allow microphone access in your browser&apos;s site settings, then try again.
                   </p>
                   <p className="font-label-sm text-on-surface-variant text-xs mt-1">
-                    In Chrome: click the lock icon in the address bar → Microphone → Allow.<br />
-                    In Safari: Settings → Websites → Microphone → Allow for this site.
+                    Chrome: click the lock icon in the address bar → Microphone → Allow.<br />
+                    Safari: Settings → Websites → Microphone → Allow for this site.
                   </p>
                   <button onClick={recorder.cancel} className="self-start mt-2 text-label-sm text-primary hover:underline">Dismiss</button>
                 </div>
               </div>
             )}
             {recorder.error === 'no-device' && (
-              <div className="bg-surface-container rounded-xl p-4 flex gap-3" role="alert">
+              <div className="bg-surface-container rounded-xl p-4 flex gap-3" role="alert" aria-live="polite">
                 <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5">mic_none</span>
                 <div>
-                  <p className="font-label-md font-medium text-on-surface">No microphone found</p>
+                  <p className="font-label-md font-medium text-on-surface">No microphone found on this device</p>
                   <p className="font-body-md text-on-surface-variant text-sm">Connect a microphone and try again, or type your response below.</p>
                   <button onClick={recorder.cancel} className="self-start mt-2 text-label-sm text-primary hover:underline">Dismiss</button>
                 </div>
               </div>
             )}
-            {recorder.error === 'unavailable' && (
-              <p className="text-error text-label-md" role="alert">Voice recording is currently unavailable. Please type your response.</p>
+            {recorder.error === 'in-use' && (
+              <div className="bg-surface-container rounded-xl p-4 flex gap-3" role="alert" aria-live="polite">
+                <span className="material-symbols-outlined text-on-surface-variant shrink-0 mt-0.5">mic_off</span>
+                <div>
+                  <p className="font-label-md font-medium text-on-surface">Microphone is in use by another app</p>
+                  <p className="font-body-md text-on-surface-variant text-sm">Close other apps using the microphone and try again.</p>
+                  <button onClick={recorder.cancel} className="self-start mt-2 text-label-sm text-primary hover:underline">Dismiss</button>
+                </div>
+              </div>
+            )}
+            {(recorder.error === 'unavailable' || recorder.error === 'insecure-context') && (
+              <p className="text-error text-label-md" role="alert" aria-live="polite">
+                {recorder.error === 'insecure-context'
+                  ? 'Voice input requires a secure connection (HTTPS).'
+                  : 'We couldn\'t access your microphone. Please try again.'}
+              </p>
+            )}
+            {recorder.error === 'unsupported' && (
+              <p className="text-on-surface-variant text-label-md" role="alert" aria-live="polite">Voice recording is not supported in this browser.</p>
             )}
 
             {/* One-time consent notice before first recording */}
@@ -517,7 +535,7 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
                 <div className="flex items-center gap-3">
                   <span className="w-3 h-3 rounded-full bg-error animate-pulse shrink-0" />
                   <span className="font-body-md text-on-surface flex-1">
-                    {recorder.state === 'requesting' ? 'Requesting microphone…' : `Recording… ${formatDuration(recorder.elapsed)} / ${formatDuration(MAX_RECORDING_SECONDS)}`}
+                    {recorder.state === 'requesting' ? 'Waiting for microphone permission…' : `Recording… ${formatDuration(recorder.elapsed)} / ${formatDuration(MAX_RECORDING_SECONDS)}`}
                   </span>
                 </div>
                 {recorder.showFocusHint && (
@@ -613,24 +631,31 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
             )}
 
             {/* Text composer — hidden while actively in a voice flow */}
-            {(recorder.state === 'idle' || recorder.state === 'error') && (
+            {(['idle', 'requesting', 'error'] as Array<typeof recorder.state>).includes(recorder.state) && (
               <>
-              {recorder.supported && (
+              {recorder.supported && recorder.state !== 'requesting' && (
                 <p className="text-label-sm text-on-surface-variant text-center flex items-center justify-center gap-1">
                   <span className="material-symbols-outlined text-[14px] text-secondary">mic</span>
                   Tap the mic to speak your response
+                </p>
+              )}
+              {recorder.state === 'requesting' && (
+                <p className="text-label-sm text-on-surface-variant text-center" aria-live="polite">
+                  Waiting for microphone permission…
                 </p>
               )}
               <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
                 <div className="relative flex items-end shrink-0 mb-0.5">
                   <button
                     onClick={beginRecording}
-                    disabled={sending}
+                    disabled={sending || recorder.state === 'requesting'}
                     className="w-10 h-10 rounded-xl text-secondary hover:bg-secondary-container flex items-center justify-center disabled:opacity-40 transition-colors"
-                    aria-label="Use voice input"
+                    aria-label={recorder.state === 'requesting' ? 'Waiting for microphone permission' : 'Record a voice message'}
                     title="Speak your response"
                   >
-                    <span className="material-symbols-outlined text-[22px]">mic</span>
+                    <span className="material-symbols-outlined text-[22px]">
+                      {recorder.state === 'requesting' ? 'hourglass_empty' : 'mic'}
+                    </span>
                   </button>
                   <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-secondary" aria-hidden="true" />
                 </div>

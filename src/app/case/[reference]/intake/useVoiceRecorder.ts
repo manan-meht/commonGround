@@ -16,6 +16,14 @@ export type RecorderState =
   | 'transcript-review'
   | 'error'
 
+export type MicError =
+  | 'permission-denied'
+  | 'no-device'
+  | 'in-use'
+  | 'unsupported'
+  | 'insecure-context'
+  | 'unavailable'
+
 export interface VoiceRecorder {
   state: RecorderState
   supported: boolean
@@ -23,7 +31,7 @@ export interface VoiceRecorder {
   showFocusHint: boolean
   audioUrl: string | null
   transcript: string
-  error: string
+  error: MicError | string
   setTranscript: (t: string) => void
   start: () => Promise<void>
   stop: () => void
@@ -33,12 +41,30 @@ export interface VoiceRecorder {
   setError: (msg: string) => void
 }
 
+function classifyError(err: unknown): MicError {
+  const name = (err as { name?: string }).name
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError') return 'permission-denied'
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'no-device'
+  if (name === 'NotReadableError' || name === 'TrackStartError') return 'in-use'
+  return 'unavailable'
+}
+
+/** Check Permissions API without depending on it — not universally supported. */
+async function queryMicPermission(): Promise<PermissionState | null> {
+  try {
+    const result = await navigator.permissions.query({ name: 'microphone' as PermissionName })
+    return result.state
+  } catch {
+    return null
+  }
+}
+
 export function useVoiceRecorder(): VoiceRecorder {
   const [state, setState] = useState<RecorderState>('idle')
   const [elapsed, setElapsed] = useState(0)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [transcript, setTranscript] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<MicError | string>('')
 
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -46,6 +72,8 @@ export function useVoiceRecorder(): VoiceRecorder {
   const blobRef = useRef<Blob | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const urlRef = useRef<string | null>(null)
+  // Guard: prevent concurrent getUserMedia calls
+  const requestingRef = useRef(false)
 
   const supported =
     typeof window !== 'undefined' &&
@@ -77,6 +105,7 @@ export function useVoiceRecorder(): VoiceRecorder {
       clearTimer()
       stopTracks()
       revokeUrl()
+      requestingRef.current = false
     }
   }, [clearTimer, stopTracks, revokeUrl])
 
@@ -87,69 +116,101 @@ export function useVoiceRecorder(): VoiceRecorder {
     clearTimer()
   }, [clearTimer])
 
+  const startRecording = useCallback((stream: MediaStream) => {
+    streamRef.current = stream
+
+    const mimeType = selectRecordingMimeType()
+    const recorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream)
+    recorderRef.current = recorder
+    chunksRef.current = []
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data)
+    }
+    recorder.onstop = () => {
+      stopTracks()
+      const type = recorder.mimeType || 'audio/webm'
+      const blob = new Blob(chunksRef.current, { type })
+      blobRef.current = blob
+      revokeUrl()
+      const url = URL.createObjectURL(blob)
+      urlRef.current = url
+      setAudioUrl(url)
+      setState('preview')
+    }
+
+    recorder.start()
+    setElapsed(0)
+    setState('recording')
+    timerRef.current = setInterval(() => {
+      setElapsed((prev) => {
+        const next = prev + 1
+        if (next >= MAX_RECORDING_SECONDS) {
+          if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+            recorderRef.current.stop()
+          }
+          clearTimer()
+        }
+        return next
+      })
+    }, 1000)
+  }, [stopTracks, revokeUrl, clearTimer])
+
   const start = useCallback(async () => {
     if (!supported) {
-      setError('Voice recording is not supported in this browser.')
+      setError('unsupported')
       setState('error')
       return
     }
+
+    // Secure context check (HTTPS or localhost)
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      setError('insecure-context')
+      setState('error')
+      return
+    }
+
+    // Prevent concurrent permission requests
+    if (requestingRef.current) return
+    requestingRef.current = true
+
     setError('')
     setState('requesting')
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      streamRef.current = stream
-
-      const mimeType = selectRecordingMimeType()
-      const recorder = mimeType
-        ? new MediaRecorder(stream, { mimeType })
-        : new MediaRecorder(stream)
-      recorderRef.current = recorder
-      chunksRef.current = []
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data)
-      }
-      recorder.onstop = () => {
-        stopTracks()
-        const type = recorder.mimeType || 'audio/webm'
-        const blob = new Blob(chunksRef.current, { type })
-        blobRef.current = blob
-        revokeUrl()
-        const url = URL.createObjectURL(blob)
-        urlRef.current = url
-        setAudioUrl(url)
-        setState('preview')
-      }
-
-      recorder.start()
-      setElapsed(0)
-      setState('recording')
-      timerRef.current = setInterval(() => {
-        setElapsed((prev) => {
-          const next = prev + 1
-          if (next >= MAX_RECORDING_SECONDS) {
-            // Auto-stop at the cap.
-            if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-              recorderRef.current.stop()
-            }
-            clearTimer()
-          }
-          return next
-        })
-      }, 1000)
-    } catch (err) {
-      stopTracks()
-      const name = (err as { name?: string }).name
-      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+      // Use Permissions API to detect permanent denial without triggering getUserMedia.
+      // Do not depend on it — falls through to getUserMedia when unavailable.
+      const permState = await queryMicPermission()
+      if (permState === 'denied') {
         setError('permission-denied')
-      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-        setError('no-device')
-      } else {
-        setError('unavailable')
+        setState('error')
+        requestingRef.current = false
+        return
       }
+
+      // getUserMedia is the authoritative permission request.
+      // Must be called directly in the user-gesture chain (click handler → start()).
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: false,
+      })
+
+      requestingRef.current = false
+      startRecording(stream)
+    } catch (err) {
+      console.error('[useVoiceRecorder] getUserMedia failed:', (err as Error).name)
+      stopTracks()
+      requestingRef.current = false
+      setError(classifyError(err))
       setState('error')
     }
-  }, [supported, stopTracks, revokeUrl, clearTimer])
+  }, [supported, stopTracks, startRecording])
 
   const cancel = useCallback(() => {
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
@@ -161,6 +222,7 @@ export function useVoiceRecorder(): VoiceRecorder {
     revokeUrl()
     chunksRef.current = []
     blobRef.current = null
+    requestingRef.current = false
     setAudioUrl(null)
     setTranscript('')
     setElapsed(0)
