@@ -123,18 +123,22 @@ export async function POST(req: NextRequest) {
 
     console.error('[intake/message] step: insert AI response')
     const aiEncrypted = encryptToDb(aiResponse)
-    const { error: aiInsertError } = await db.from('intake_messages').insert({
-      case_id: caseId,
-      participant_id: participantId,
-      role: 'assistant',
-      encrypted_content: aiEncrypted.encrypted_content,
-      encryption_iv: aiEncrypted.encryption_iv,
-      encryption_tag: aiEncrypted.encryption_tag,
-      sequence_number: nextSequence + 1,
-    })
+    const { data: aiInserted, error: aiInsertError } = await db
+      .from('intake_messages')
+      .insert({
+        case_id: caseId,
+        participant_id: participantId,
+        role: 'assistant',
+        encrypted_content: aiEncrypted.encrypted_content,
+        encryption_iv: aiEncrypted.encryption_iv,
+        encryption_tag: aiEncrypted.encryption_tag,
+        sequence_number: nextSequence + 1,
+      })
+      .select('id')
+      .single()
     if (aiInsertError) console.error('[intake/message] ai insert error:', JSON.stringify(aiInsertError))
 
-    return NextResponse.json({ message: aiResponse })
+    return NextResponse.json({ message: aiResponse, messageId: aiInserted?.id ?? null })
   } catch (err) {
     console.error('[POST /api/intake/message] Error:', err)
     return NextResponse.json({ error: 'Failed to process message.' }, { status: 500 })

@@ -24,6 +24,7 @@ export async function GET(_req: NextRequest) {
   }
 
   const decrypted = (messages as DbIntakeMessage[]).map((m) => ({
+    id: m.id,
     role: m.role,
     content: decryptFromDb(m),
     createdAt: m.created_at,

@@ -3,11 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { AssistantVoicePlayer } from './AssistantVoicePlayer'
+import { useVoiceRecorder } from './useVoiceRecorder'
+import { formatDuration, MAX_RECORDING_SECONDS } from '@/lib/voice'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  id?: string
 }
+
+const VOICE_NOTICE_KEY = 'urushi_voice_notice_seen'
 
 interface Props {
   caseReference: string
@@ -193,6 +199,8 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
   const [consented, setConsented] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [showVoiceNotice, setShowVoiceNotice] = useState(false)
+  const recorder = useVoiceRecorder()
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -205,12 +213,13 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
     fetch('/api/intake/history')
       .then(async (res) => {
         if (res.ok) {
-          const data = await res.json() as { messages: Array<{role: string; content: string}> }
+          const data = await res.json() as { messages: Array<{id?: string; role: string; content: string}> }
           if (data.messages && data.messages.length > 0) {
             setMessages(
               data.messages.map((m) => ({
                 role: (m.role === 'participant' ? 'user' : 'assistant') as 'user' | 'assistant',
                 content: m.content,
+                id: m.id,
               }))
             )
           }
@@ -219,11 +228,11 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
       .catch(() => {})
   }, [])
 
-  async function sendMessage() {
-    const trimmed = input.trim()
+  async function sendMessage(text?: string) {
+    const trimmed = (text ?? input).trim()
     if (!trimmed || sending) return
 
-    setInput('')
+    if (text === undefined) setInput('')
     setSending(true)
     setError('')
 
@@ -237,7 +246,7 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
         body: JSON.stringify({ content: trimmed }),
       })
 
-      const data = await res.json() as { message?: string; error?: string }
+      const data = await res.json() as { message?: string; messageId?: string | null; error?: string }
 
       if (!res.ok) {
         setError(data.error ?? 'Failed to send message.')
@@ -245,7 +254,7 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
       }
 
       if (data.message) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.message! }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.message!, id: data.messageId ?? undefined }])
       }
     } catch {
       setError('A network error occurred. Please try again.')
@@ -310,6 +319,31 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
       setError('A network error occurred.')
       setSubmitting(false)
     }
+  }
+
+  function beginRecording() {
+    if (!recorder.supported) {
+      recorder.setError('Voice notes are not supported in this browser. You can still type.')
+      return
+    }
+    if (typeof window !== 'undefined' && !window.localStorage.getItem(VOICE_NOTICE_KEY)) {
+      setShowVoiceNotice(true)
+      return
+    }
+    void recorder.start()
+  }
+
+  function confirmVoiceNotice() {
+    if (typeof window !== 'undefined') window.localStorage.setItem(VOICE_NOTICE_KEY, '1')
+    setShowVoiceNotice(false)
+    void recorder.start()
+  }
+
+  async function sendTranscript() {
+    const text = recorder.transcript.trim()
+    if (!text) return
+    recorder.cancel()
+    await sendMessage(text)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -383,6 +417,9 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
                 }
               >
                 <p className="font-body-md text-body-md whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === 'assistant' && msg.id && (
+                  <AssistantVoicePlayer messageId={msg.id} />
+                )}
               </div>
             </div>
           ))}
@@ -421,27 +458,167 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
                 I&apos;m ready — generate my summary
               </button>
             )}
-            <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                maxLength={4000}
-                placeholder="Type your reflection here…"
-                className="flex-grow bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md py-2 px-3 min-h-[44px] max-h-32 text-on-surface"
-                aria-label="Your message"
-              />
-              <button
-                onClick={() => void sendMessage()}
-                disabled={!input.trim() || sending}
-                className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity shrink-0 mb-0.5 disabled:opacity-40"
-                aria-label="Send message"
-              >
-                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
-              </button>
-            </div>
+            {recorder.error && (
+              <p className="text-error text-label-md" role="alert">{recorder.error}</p>
+            )}
+
+            {/* One-time consent notice before first recording */}
+            {showVoiceNotice && (
+              <div className="bg-secondary-container/30 rounded-xl p-4 flex flex-col gap-3">
+                <p className="font-body-md text-on-surface">
+                  Your voice note will be processed to create a transcript. You can review and edit it before anything is sent.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={confirmVoiceNotice}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md"
+                  >
+                    Got it — start recording
+                  </button>
+                  <button
+                    onClick={() => setShowVoiceNotice(false)}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Recording / preview / review states */}
+            {(recorder.state === 'requesting' || recorder.state === 'recording') && (
+              <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex flex-col gap-3" aria-live="assertive">
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full bg-error animate-pulse shrink-0" />
+                  <span className="font-body-md text-on-surface flex-1">
+                    {recorder.state === 'requesting' ? 'Requesting microphone…' : `Recording… ${formatDuration(recorder.elapsed)} / ${formatDuration(MAX_RECORDING_SECONDS)}`}
+                  </span>
+                </div>
+                {recorder.showFocusHint && (
+                  <p className="text-label-sm text-on-surface-variant">Try to focus on one incident or concern at a time.</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={recorder.stop}
+                    disabled={recorder.state !== 'recording'}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md disabled:opacity-50"
+                  >
+                    Stop
+                  </button>
+                  <button
+                    onClick={recorder.cancel}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {recorder.state === 'preview' && recorder.audioUrl && (
+              <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex flex-col gap-3">
+                <audio controls src={recorder.audioUrl} className="w-full" aria-label="Recorded voice note" />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => void recorder.transcribe()}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md"
+                  >
+                    Convert to text
+                  </button>
+                  <button
+                    onClick={recorder.reRecord}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Re-record
+                  </button>
+                  <button
+                    onClick={recorder.cancel}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {recorder.state === 'transcribing' && (
+              <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex items-center gap-3" aria-live="polite">
+                <span className="material-symbols-outlined text-primary animate-spin">progress_activity</span>
+                <span className="font-body-md text-on-surface">Creating transcript…</span>
+              </div>
+            )}
+
+            {recorder.state === 'transcript-review' && (
+              <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex flex-col gap-3">
+                <div>
+                  <h3 className="font-headline-sm text-on-surface">Review what Urushi heard</h3>
+                  <p className="text-label-sm text-on-surface-variant">Check names and important details before sending.</p>
+                </div>
+                <textarea
+                  value={recorder.transcript}
+                  onChange={(e) => recorder.setTranscript(e.target.value)}
+                  rows={5}
+                  maxLength={4000}
+                  className="w-full bg-surface rounded-xl border border-outline-variant focus:border-secondary focus:ring-0 resize-y font-body-md text-body-md p-3 text-on-surface"
+                  aria-label="Transcript"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => void sendTranscript()}
+                    disabled={!recorder.transcript.trim() || sending}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                  <button
+                    onClick={recorder.reRecord}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Record again
+                  </button>
+                  <button
+                    onClick={recorder.cancel}
+                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Text composer — hidden while actively in a voice flow */}
+            {(recorder.state === 'idle' || recorder.state === 'error') && (
+              <div className="flex items-end gap-2 bg-surface-container-low rounded-2xl p-2 border border-outline-variant focus-within:border-secondary transition-colors">
+                <button
+                  onClick={beginRecording}
+                  disabled={sending}
+                  className="w-10 h-10 rounded-xl text-on-surface-variant hover:bg-surface-container flex items-center justify-center shrink-0 mb-0.5 disabled:opacity-40 transition-colors"
+                  aria-label="Record a voice note"
+                  title="Record a voice note"
+                >
+                  <span className="material-symbols-outlined text-[22px]">mic</span>
+                </button>
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  maxLength={4000}
+                  placeholder="Type your reflection here…"
+                  className="flex-grow bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md py-2 px-3 min-h-[44px] max-h-32 text-on-surface"
+                  aria-label="Your message"
+                />
+                <button
+                  onClick={() => void sendMessage()}
+                  disabled={!input.trim() || sending}
+                  className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity shrink-0 mb-0.5 disabled:opacity-40"
+                  aria-label="Send message"
+                >
+                  <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
+                </button>
+              </div>
+            )}
           </div>
         </footer>
       ) : (
