@@ -73,27 +73,36 @@ export function BriefReview({
     setInviteLink(sessionStorage.getItem('cg_invite_link') ?? '')
   }, [])
 
-  const pollForBrief = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/cases/${caseId}/brief`)
-      if (res.ok) {
-        const data = await res.json() as { brief: InvitationBrief | null; approvedAt: string | null }
-        if (data.brief) {
-          setBrief(data.brief)
-          setApprovedAt(data.approvedAt)
-          setLoading(false)
-        }
-      }
-    } catch { /* ignore */ }
-  }, [caseId])
-
+  // On mount: if no brief exists yet, generate it directly rather than waiting
+  // for the background waitUntil task (which may not have completed in time).
   useEffect(() => {
     if (!loading) return
-    const pollId = setInterval(() => void pollForBrief(), 3000)
-    const timeoutId = setTimeout(() => setLoadingTimedOut(true), 30000)
-    void pollForBrief()
-    return () => { clearInterval(pollId); clearTimeout(timeoutId) }
-  }, [loading, pollForBrief])
+    let cancelled = false
+
+    async function generate() {
+      try {
+        const res = await fetch(`/api/cases/${caseId}/brief`, { method: 'POST' })
+        if (cancelled) return
+        const data = await res.json() as { brief?: InvitationBrief; error?: string }
+        if (res.ok && data.brief) {
+          setBrief(data.brief)
+          setLoading(false)
+        } else {
+          setError(data.error ?? 'Failed to generate invitation brief.')
+          setLoadingTimedOut(true)
+        }
+      } catch {
+        if (!cancelled) {
+          setError('A network error occurred. Please try again.')
+          setLoadingTimedOut(true)
+        }
+      }
+    }
+
+    void generate()
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleRegenerate() {
     setRegenerating(true)

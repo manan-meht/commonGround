@@ -72,48 +72,9 @@ export async function POST(req: NextRequest) {
       metadata: null,
     })
 
-    // For the initiator: kick off Invitation Brief generation asynchronously.
-    // Party B cannot join until Party A approves the brief.
+    // For the initiator: redirect to the brief review page.
+    // Brief generation happens there directly (not via background task).
     if (session.role === 'initiator') {
-      let cfCtxBrief: { waitUntil: (p: Promise<unknown>) => void } | null = null
-      try { cfCtxBrief = getCloudflareContext().ctx } catch { /* local dev */ }
-
-      const { data: caseRowForBrief } = await db
-        .from('cases')
-        .select('topic, initiator_name, recipient_name')
-        .eq('id', caseId)
-        .single()
-
-      if (caseRowForBrief) {
-        const briefPromise = (async () => {
-          try {
-            const { generateInvitationBrief, INVITATION_BRIEF_VERSION } = await import('@/lib/ai/invitationBrief')
-            const brief = await generateInvitationBrief({
-              initiatorName: caseRowForBrief.initiator_name,
-              recipientName: caseRowForBrief.recipient_name,
-              topic: caseRowForBrief.topic,
-              initiatorSummaryJson: summary,
-            })
-            await db.from('cases').update({
-              invitation_brief: JSON.stringify(brief),
-              invitation_brief_approved_at: null,
-            }).eq('id', caseId)
-            await db.from('audit_events').insert({
-              case_id: caseId,
-              participant_id: participantId,
-              event_type: 'invitation_brief_generated',
-              metadata: { version: INVITATION_BRIEF_VERSION },
-            })
-          } catch (err) {
-            console.error('[intake/complete] Brief generation failed:', err)
-          }
-        })()
-
-        if (cfCtxBrief) {
-          cfCtxBrief.waitUntil(briefPromise)
-        }
-      }
-
       return NextResponse.json({ success: true, readyForAnalysis: false, briefPending: true })
     }
 
