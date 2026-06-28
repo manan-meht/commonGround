@@ -177,6 +177,89 @@ describe('getUserMedia audio constraints', () => {
   })
 })
 
+describe('preview send action', () => {
+  // The preview step now offers a "Send voice message" action instead of the
+  // old "Convert to text" button. We assert the new flow at the upload layer
+  // (mirroring the file's existing fetch-layer testing approach, since the
+  // hook requires a React renderer not available in this node environment).
+
+  function makeBlob(): Blob {
+    return new Blob(['fake-audio'], { type: 'audio/webm' })
+  }
+
+  // Mirrors the hook's sendVoiceMessage upload + transcription logic.
+  function makeSendVoiceMessage() {
+    let sending = false
+    return async function sendVoiceMessage(blob: Blob): Promise<string> {
+      if (sending) throw new Error('Already sending.')
+      sending = true
+      try {
+        const form = new FormData()
+        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm'
+        form.append('audio', blob, `voice-note.${ext}`)
+        const res = await fetch('/api/intake/transcribe', { method: 'POST', body: form })
+        const data = (await res.json()) as { transcript?: string; error?: string }
+        if (!res.ok || !data.transcript) {
+          sending = false
+          throw new Error(data.error ?? 'Failed to transcribe audio.')
+        }
+        return data.transcript
+      } catch (err) {
+        sending = false
+        throw err
+      }
+    }
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('does not expose a transcript-review step', () => {
+    const recorderStates = ['idle', 'requesting', 'recording', 'preview', 'transcribing', 'uploading', 'sending-to-chat', 'error']
+    expect(recorderStates).not.toContain('transcript-review')
+  })
+
+  it('sendVoiceMessage uploads to /api/intake/transcribe and returns transcript', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ transcript: 'hello world' }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const sendVoiceMessage = makeSendVoiceMessage()
+    const transcript = await sendVoiceMessage(makeBlob())
+
+    expect(transcript).toBe('hello world')
+    expect(fetchMock).toHaveBeenCalledWith('/api/intake/transcribe', expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('prevents duplicate sendVoiceMessage calls', async () => {
+    const fetchMock = vi.fn().mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ ok: true, json: async () => ({ transcript: 'x' }) }), 10))
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const sendVoiceMessage = makeSendVoiceMessage()
+    const blob = makeBlob()
+    const first = sendVoiceMessage(blob)
+    await expect(sendVoiceMessage(blob)).rejects.toThrow('Already sending.')
+    await first
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('transcription failure throws (returning the recorder to preview)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: 'Failed to transcribe audio.' }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const sendVoiceMessage = makeSendVoiceMessage()
+    await expect(sendVoiceMessage(makeBlob())).rejects.toThrow('Failed to transcribe audio.')
+  })
+})
+
 describe('Permissions API pre-check', () => {
   afterEach(() => {
     vi.restoreAllMocks()

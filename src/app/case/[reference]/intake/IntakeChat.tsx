@@ -11,6 +11,36 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   id?: string
+  voiceUrl?: string      // object URL or null
+  voiceDuration?: number // seconds
+}
+
+function VoiceMessageBubble({ url, duration, content }: { url: string; duration?: number; content: string }) {
+  const [playing, setPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  function togglePlay() {
+    if (!audioRef.current) return
+    if (playing) { audioRef.current.pause() } else { void audioRef.current.play() }
+    setPlaying(!playing)
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p>{content}</p>
+      <audio ref={audioRef} src={url} onEnded={() => setPlaying(false)} className="hidden" />
+      <button
+        onClick={togglePlay}
+        aria-label={playing ? 'Pause voice message' : 'Listen to voice message'}
+        className="self-start flex items-center gap-1.5 text-label-sm text-on-primary-container/70 hover:text-on-primary-container transition-colors"
+      >
+        <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+          {playing ? 'pause_circle' : 'play_circle'}
+        </span>
+        {playing ? 'Pause' : 'Listen'}{duration != null && ` · ${formatDuration(duration)}`}
+      </button>
+    </div>
+  )
 }
 
 const VOICE_NOTICE_KEY = 'urushi_voice_notice_seen'
@@ -23,6 +53,7 @@ interface Props {
   otherPartyName: string
   role: 'initiator' | 'recipient'
   isLoggedIn?: boolean
+  openingMessage?: string
 }
 
 // Matches IntakeSummarySchema from lib/ai/intakePrompt.ts
@@ -189,9 +220,11 @@ const INITIAL_MESSAGE: Message = {
   content: "Briefly tell me what happened in the most recent incident, what each person did, and what you most want to change. Three to six sentences is enough to get started.",
 }
 
-export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }: Props) {
+export function IntakeChat({ caseReference, topic, participantName, role, isLoggedIn, openingMessage }: Props) {
   const router = useRouter()
-  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: openingMessage ?? INITIAL_MESSAGE.content },
+  ])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [showSummaryStep, setShowSummaryStep] = useState(false)
@@ -314,7 +347,11 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
         fetch(`/api/cases/${caseReference}/analyse`, { method: 'POST' }).catch(() => {})
       }
 
-      router.push(`/case/${caseReference}/waiting`)
+      if (role === 'initiator') {
+        router.push(`/case/${caseReference}/brief`)
+      } else {
+        router.push(`/case/${caseReference}/waiting`)
+      }
     } catch {
       setError('A network error occurred.')
       setSubmitting(false)
@@ -339,11 +376,55 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
     void recorder.start()
   }
 
-  async function sendTranscript() {
-    const text = recorder.transcript.trim()
-    if (!text) return
-    recorder.cancel()
-    await sendMessage(text)
+  async function sendMessageFromTranscript(transcript: string, audioUrl: string | null, duration: number) {
+    if (sending) return
+    setSending(true)
+    setError('')
+
+    // Add user voice message to UI immediately
+    const voiceMsg: Message = {
+      role: 'user',
+      content: transcript,
+      voiceUrl: audioUrl ?? undefined,
+      voiceDuration: duration,
+    }
+    setMessages(prev => [...prev, voiceMsg])
+    recorder.cancel() // reset recorder state
+
+    try {
+      const res = await fetch('/api/intake/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: transcript }),
+      })
+      const data = await res.json() as { message?: string; messageId?: string; error?: string }
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to send message.')
+        return
+      }
+      if (data.message) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message!, id: data.messageId }])
+      }
+    } catch {
+      setError('A network error occurred. Please try again.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function handleSendVoice() {
+    const duration = recorder.duration
+    try {
+      const { transcript, persistentAudioUrl } = await recorder.sendVoiceMessage()
+      if (!transcript.trim()) {
+        if (persistentAudioUrl) URL.revokeObjectURL(persistentAudioUrl)
+        recorder.setError('We couldn\'t understand this voice message. Try again or type your message instead.')
+        return
+      }
+      await sendMessageFromTranscript(transcript, persistentAudioUrl, duration)
+    } catch {
+      // error and URL cleanup already handled in the hook
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -416,7 +497,11 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
                     : 'bg-surface-container-highest text-on-surface p-4 rounded-2xl bubble-ai shadow-sm max-w-[85%]'
                 }
               >
-                <p className="font-body-md text-body-md whitespace-pre-wrap">{msg.content}</p>
+                {msg.voiceUrl ? (
+                  <VoiceMessageBubble url={msg.voiceUrl} duration={msg.voiceDuration} content={msg.content} />
+                ) : (
+                  <p className="font-body-md text-body-md whitespace-pre-wrap">{msg.content}</p>
+                )}
                 {msg.role === 'assistant' && msg.id && (
                   <AssistantVoicePlayer messageId={msg.id} />
                 )}
@@ -505,6 +590,10 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
             {recorder.error === 'unsupported' && (
               <p className="text-on-surface-variant text-label-md" role="alert" aria-live="polite">Voice recording is not supported in this browser.</p>
             )}
+            {recorder.error &&
+              !(['permission-denied', 'no-device', 'in-use', 'unavailable', 'insecure-context', 'unsupported'] as Array<typeof recorder.error>).includes(recorder.error) && (
+                <p className="text-error text-label-md" role="alert" aria-live="polite">{recorder.error}</p>
+            )}
 
             {/* One-time consent notice before first recording */}
             {showVoiceNotice && (
@@ -561,13 +650,18 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
 
             {recorder.state === 'preview' && recorder.audioUrl && (
               <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">Voice message</span>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">{formatDuration(recorder.duration)}</span>
+                </div>
                 <audio controls src={recorder.audioUrl} className="w-full" aria-label="Recorded voice note" />
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => void recorder.transcribe()}
-                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md"
+                    onClick={() => void handleSendVoice()}
+                    disabled={sending}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md disabled:opacity-50"
                   >
-                    Convert to text
+                    Send voice message
                   </button>
                   <button
                     onClick={recorder.reRecord}
@@ -585,48 +679,10 @@ export function IntakeChat({ caseReference, topic, participantName, isLoggedIn }
               </div>
             )}
 
-            {recorder.state === 'transcribing' && (
+            {(recorder.state === 'uploading' || recorder.state === 'sending-to-chat' || recorder.state === 'transcribing') && (
               <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex items-center gap-3" aria-live="polite">
                 <span className="material-symbols-outlined text-primary animate-spin">progress_activity</span>
-                <span className="font-body-md text-on-surface">Creating transcript…</span>
-              </div>
-            )}
-
-            {recorder.state === 'transcript-review' && (
-              <div className="bg-surface-container-low rounded-2xl p-4 border border-outline-variant flex flex-col gap-3">
-                <div>
-                  <h3 className="font-headline-sm text-on-surface">Review what Urushi heard</h3>
-                  <p className="text-label-sm text-on-surface-variant">Check names and important details before sending.</p>
-                </div>
-                <textarea
-                  value={recorder.transcript}
-                  onChange={(e) => recorder.setTranscript(e.target.value)}
-                  rows={5}
-                  maxLength={4000}
-                  className="w-full bg-surface rounded-xl border border-outline-variant focus:border-secondary focus:ring-0 resize-y font-body-md text-body-md p-3 text-on-surface"
-                  aria-label="Transcript"
-                />
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => void sendTranscript()}
-                    disabled={!recorder.transcript.trim() || sending}
-                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-md text-label-md disabled:opacity-50"
-                  >
-                    Send
-                  </button>
-                  <button
-                    onClick={recorder.reRecord}
-                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
-                  >
-                    Record again
-                  </button>
-                  <button
-                    onClick={recorder.cancel}
-                    className="px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container font-label-md text-label-md"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <span className="font-body-md text-on-surface">Sending…</span>
               </div>
             )}
 

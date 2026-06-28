@@ -128,7 +128,12 @@ const ReviewPointSchema = z
 export const SharedReportSchema = z
   .object({
     reportTitle: z.string().min(1),
-    bottomLine: z.string().min(1),
+    bottomLine: z.string().min(1).describe(
+      'Top-Line Summary: a detailed executive assessment (500–900 words) covering the central problem, ' +
+      'why the conflict remains unresolved, the key issues requiring resolution, a balanced path forward ' +
+      'for each issue, and a numbered Recommended Next Steps section with 3–6 concrete participant-specific actions. ' +
+      'Use double newlines to separate paragraphs and subsections.'
+    ),
     sharedGoals: z.array(z.string()),
     initiatorRecognition: PerspectiveRecognitionSchema,
     recipientRecognition: PerspectiveRecognitionSchema,
@@ -313,6 +318,37 @@ For possible_coercion_or_abuse, possible_self_harm_or_violence, possible_child_s
 - Recommend the appropriate type of qualified human support;
 - State that emergency services should be contacted if there is immediate danger;
 - Keep the report title neutral and non-alarmist.
+
+# Top-Line Summary (bottomLine field)
+
+The "bottomLine" field is the Top-Line Summary — a detailed, self-contained executive assessment of the conflict. A participant who reads only this section should be able to answer: What is this conflict really about? Why has it not been resolved? Which issues are most urgent? What does each participant need to acknowledge or change? What should happen next, and who is responsible?
+
+Write approximately 500 to 900 words. Do not add words merely to reach a target length; the section should be detailed because it contains useful analysis.
+
+Structure the Top-Line Summary as follows, using plain paragraph labels (not JSON keys):
+
+**A. The Central Problem**
+Explain the immediate disagreement and the deeper issue underneath it. State what each participant appears to be seeking, protecting, or concerned about. Identify where their expectations, interpretations, or priorities differ. Distinguish the visible argument from the underlying source of the conflict.
+
+**B. Why the Conflict Remains Unresolved**
+Identify the main factors preventing resolution. These may include different interpretations of events, disputed facts, unclear responsibilities, unmet expectations, communication patterns, emotional hurt, loss of trust, avoidance of difficult decisions, repeated escalating behaviours, or lack of agreement on what a fair outcome would look like. Explain how these factors interact rather than listing them in isolation.
+
+**C. Key Issues That Need to Be Resolved**
+Identify two to five issues requiring agreement, clarification, acknowledgement, or behavioural change. Distinguish between practical decisions, responsibilities and accountability, emotional or relational concerns, communication or behavioural changes, and boundaries or future expectations. Prioritise the issues — do not treat every disagreement as equally important.
+
+**D. How the Issues Should Be Resolved**
+For each key issue, explain a balanced and realistic path forward: what needs to be clarified or decided, what each participant may need to acknowledge, what behaviour should stop or change, what responsibility each participant should accept, and what agreement, rule, boundary, or process could prevent recurrence. Do not assume compromise is always the fairest solution. Where the available information indicates one participant bears greater responsibility for a specific issue, state this carefully and explain why — without using hostile, diagnostic, or character-based labels. Balanced analysis does not require equal blame.
+
+**Recommended Next Steps**
+End with a numbered list of three to six concrete actions. For each action specify: who should take it (Participant A, Participant B, or both), what they should do, the purpose of the action, the order actions should happen in, a reasonable timeframe, and what a successful result looks like. Where appropriate, provide separate actions for each participant and joint actions.
+
+Avoid vague recommendations such as "communicate better," "listen to each other," "respect each other's feelings," or "find a compromise." Convert them into observable actions. For example: "Participant A should identify which responsibilities they are willing to own before the next joint discussion." "Participant B should acknowledge the impact of raising their voice, even if they believe their underlying frustration was justified." "Both participants should agree on a decision-making process before reopening the disputed issue."
+
+Clearly distinguish among: facts both participants appear to agree on; claims made by only one participant; interpretations or inferences made by the analysis; and recommendations made by the analysis. Do not invent facts, motives, admissions, agreements, or quotations.
+
+Before finalising the response, verify internally that the Top-Line Summary allows someone reading only that section to answer all six questions above. If any remain unclear, revise before returning the final JSON.
+
+The Top-Line Summary is written in plain prose. Use double newlines to separate subsections. Do not use JSON inside this field. Write it in plain English, free of therapy jargon, legal conclusions, diagnoses, and character judgements.
 
 # Output discipline
 

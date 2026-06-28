@@ -10,6 +10,7 @@ interface SiteHeaderProps {
   exitLabel?: string
   exitHref?: string
   userEmail?: string | null
+  logoHref?: string
 }
 
 export function SiteHeader({
@@ -17,6 +18,7 @@ export function SiteHeader({
   exitLabel = 'Exit',
   exitHref = '/',
   userEmail,
+  logoHref,
 }: SiteHeaderProps) {
   const router = useRouter()
 
@@ -30,7 +32,7 @@ export function SiteHeader({
   return (
     <header className="bg-surface sticky top-0 z-50 shadow-sm">
       <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
-        <Link href={userEmail ? '/dashboard' : '/'} className="flex items-center gap-2 font-headline-md text-headline-md font-bold text-primary">
+        <Link href={logoHref ?? (userEmail ? '/dashboard' : '/')} className="flex items-center gap-2 font-headline-md text-headline-md font-bold text-primary">
           <Image src="/logo.png" alt="Urushi Labs logo" width={28} height={28} className="rounded-sm" />
           Urushi Labs
         </Link>

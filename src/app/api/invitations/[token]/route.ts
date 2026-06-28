@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
   const { data: caseRow, error } = await db
     .from('cases')
-    .select('id, public_reference, topic, initiator_name, recipient_name, status, invite_expires_at')
+    .select('id, public_reference, topic, initiator_name, recipient_name, status, invite_expires_at, invitation_brief, invitation_brief_approved_at')
     .eq('invitation_token_hash', tokenHash)
     .single()
 
@@ -35,12 +35,18 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'This invitation is no longer active.' }, { status: 410 })
   }
 
+  // Brief guard: if a brief has been generated but not yet approved, block access
+  if (caseRow.invitation_brief && !caseRow.invitation_brief_approved_at) {
+    return NextResponse.json({ error: 'This invitation is not yet ready. The other participant is still preparing it.' }, { status: 423 })
+  }
+
   return NextResponse.json({
     topic: caseRow.topic,
     initiatorName: caseRow.initiator_name,
     recipientName: caseRow.recipient_name,
     caseReference: caseRow.public_reference,
     status: caseRow.status,
+    invitationBrief: caseRow.invitation_brief ? JSON.parse(caseRow.invitation_brief) : null,
   })
 }
 
@@ -84,6 +90,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
   if (['declined', 'closed'].includes(caseRow.status)) {
     return NextResponse.json({ error: 'This invitation is no longer active.' }, { status: 410 })
+  }
+
+  // Check brief has been approved before allowing Party B to join
+  const { data: briefCheck } = await db
+    .from('cases')
+    .select('invitation_brief, invitation_brief_approved_at')
+    .eq('id', caseRow.id)
+    .single()
+
+  if (briefCheck?.invitation_brief && !briefCheck.invitation_brief_approved_at) {
+    return NextResponse.json({ error: 'This invitation is not yet ready. The other participant is still preparing it.' }, { status: 423 })
   }
 
   // Check if recipient participant already exists

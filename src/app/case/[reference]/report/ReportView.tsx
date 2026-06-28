@@ -85,7 +85,11 @@ export function ReportView({
 
         {/* Bottom line */}
         <Section icon="info" title="Summary" primary>
-          <p className="text-on-surface-variant leading-relaxed font-body-md">{report.bottomLine}</p>
+          <div className="space-y-3">
+            {report.bottomLine.split('\n\n').map((para, i) => (
+              <p key={i} className="text-on-surface-variant leading-relaxed font-body-md">{para}</p>
+            ))}
+          </div>
         </Section>
 
         {/* Shared goals */}

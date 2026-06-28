@@ -20,5 +20,5 @@ export default async function InvitePage({ params }: PageProps) {
     redirect(`/auth?next=/invite/${token}`)
   }
 
-  return <InvitationView token={token} />
+  return <InvitationView token={token} userEmail={user.email ?? null} />
 }

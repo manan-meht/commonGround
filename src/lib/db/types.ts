@@ -60,6 +60,16 @@ export interface DbCase {
   analysis_started_at: string | null
   analysis_completed_at: string | null
   closed_at: string | null
+  invitation_brief?: string | null
+  invitation_brief_approved_at?: string | null
+}
+
+export interface InvitationBrief {
+  title: string
+  reasonForConversation: string
+  issueFromPartyAPerspective: string
+  hopedForOutcome: string
+  invitationToRespond: string
 }
 
 export interface DbParticipant {

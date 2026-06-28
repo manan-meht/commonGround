@@ -13,7 +13,8 @@ export type RecorderState =
   | 'recording'
   | 'preview'
   | 'transcribing'
-  | 'transcript-review'
+  | 'uploading'
+  | 'sending-to-chat'
   | 'error'
 
 export type MicError =
@@ -28,8 +29,10 @@ export interface VoiceRecorder {
   state: RecorderState
   supported: boolean
   elapsed: number
+  duration: number
   showFocusHint: boolean
   audioUrl: string | null
+  audioBlob: Blob | null
   transcript: string
   error: MicError | string
   setTranscript: (t: string) => void
@@ -37,7 +40,7 @@ export interface VoiceRecorder {
   stop: () => void
   cancel: () => void
   reRecord: () => void
-  transcribe: () => Promise<void>
+  sendVoiceMessage: () => Promise<{ transcript: string; persistentAudioUrl: string | null }>
   setError: (msg: string) => void
 }
 
@@ -53,6 +56,7 @@ function classifyError(err: unknown): MicError {
 export function useVoiceRecorder(): VoiceRecorder {
   const [state, setState] = useState<RecorderState>('idle')
   const [elapsed, setElapsed] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState<MicError | string>('')
@@ -63,13 +67,21 @@ export function useVoiceRecorder(): VoiceRecorder {
   const blobRef = useRef<Blob | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const urlRef = useRef<string | null>(null)
+  // Tracks elapsed seconds without depending on the state setter closure.
+  const elapsedRef = useRef(0)
   // Guard: prevent concurrent getUserMedia calls
   const requestingRef = useRef(false)
+  // Guard: prevent duplicate sendVoiceMessage calls
+  const sendingRef = useRef(false)
 
-  const supported =
-    typeof window !== 'undefined' &&
-    typeof MediaRecorder !== 'undefined' &&
-    !!navigator.mediaDevices?.getUserMedia
+  // Start as false to match SSR; resolved after mount to avoid hydration mismatch.
+  const [supported, setSupported] = useState(false)
+  useEffect(() => {
+    setSupported(
+      typeof MediaRecorder !== 'undefined' &&
+      !!navigator.mediaDevices?.getUserMedia
+    )
+  }, [])
 
   const stopTracks = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop())
@@ -122,6 +134,7 @@ export function useVoiceRecorder(): VoiceRecorder {
     }
     recorder.onstop = () => {
       stopTracks()
+      setDuration(elapsedRef.current)
       const type = recorder.mimeType || 'audio/webm'
       const blob = new Blob(chunksRef.current, { type })
       blobRef.current = blob
@@ -134,10 +147,12 @@ export function useVoiceRecorder(): VoiceRecorder {
 
     recorder.start()
     setElapsed(0)
+    elapsedRef.current = 0
     setState('recording')
     timerRef.current = setInterval(() => {
       setElapsed((prev) => {
         const next = prev + 1
+        elapsedRef.current = next
         if (next >= MAX_RECORDING_SECONDS) {
           if (recorderRef.current && recorderRef.current.state !== 'inactive') {
             recorderRef.current.stop()
@@ -207,9 +222,12 @@ export function useVoiceRecorder(): VoiceRecorder {
     chunksRef.current = []
     blobRef.current = null
     requestingRef.current = false
+    sendingRef.current = false
+    elapsedRef.current = 0
     setAudioUrl(null)
     setTranscript('')
     setElapsed(0)
+    setDuration(0)
     setError('')
     setState('idle')
   }, [clearTimer, stopTracks, revokeUrl])
@@ -219,15 +237,27 @@ export function useVoiceRecorder(): VoiceRecorder {
     setAudioUrl(null)
     blobRef.current = null
     chunksRef.current = []
+    sendingRef.current = false
+    elapsedRef.current = 0
     setTranscript('')
     setElapsed(0)
+    setDuration(0)
     void start()
   }, [revokeUrl, start])
 
-  const transcribe = useCallback(async () => {
+  // Uploads the recorded audio for transcription.
+  // Returns the transcript and a persistent audio URL for playback.
+  // The persistent URL is a fresh object URL created before any state changes,
+  // so it is not affected by cancel() revoking the recorder's internal URL.
+  const sendVoiceMessage = useCallback(async (): Promise<{ transcript: string; persistentAudioUrl: string | null }> => {
     const blob = blobRef.current
-    if (!blob) return
-    setState('transcribing')
+    if (!blob) throw new Error('No recording to send.')
+    // Guard against duplicate calls.
+    if (sendingRef.current) throw new Error('Already sending.')
+    sendingRef.current = true
+    // Create the persistent URL now, before any state changes or cancel() calls.
+    const persistentAudioUrl = URL.createObjectURL(blob)
+    setState('uploading')
     setError('')
     try {
       const form = new FormData()
@@ -236,15 +266,23 @@ export function useVoiceRecorder(): VoiceRecorder {
       const res = await fetch('/api/intake/transcribe', { method: 'POST', body: form })
       const data = (await res.json()) as { transcript?: string; error?: string }
       if (!res.ok || !data.transcript) {
+        URL.revokeObjectURL(persistentAudioUrl)
         setError(data.error ?? 'Failed to transcribe audio.')
         setState('preview')
-        return
+        sendingRef.current = false
+        throw new Error(data.error ?? 'Failed to transcribe audio.')
       }
       setTranscript(data.transcript)
-      setState('transcript-review')
-    } catch {
-      setError('A network error occurred while transcribing.')
-      setState('preview')
+      setState('sending-to-chat')
+      return { transcript: data.transcript, persistentAudioUrl }
+    } catch (err) {
+      if (sendingRef.current) {
+        URL.revokeObjectURL(persistentAudioUrl)
+        setError('A network error occurred while transcribing.')
+        setState('preview')
+        sendingRef.current = false
+      }
+      throw err
     }
   }, [])
 
@@ -252,8 +290,10 @@ export function useVoiceRecorder(): VoiceRecorder {
     state,
     supported,
     elapsed,
+    duration,
     showFocusHint: state === 'recording' && elapsed >= FOCUS_HINT_SECONDS,
     audioUrl,
+    audioBlob: blobRef.current,
     transcript,
     error,
     setTranscript,
@@ -261,7 +301,7 @@ export function useVoiceRecorder(): VoiceRecorder {
     stop,
     cancel,
     reRecord,
-    transcribe,
+    sendVoiceMessage,
     setError,
   }
 }

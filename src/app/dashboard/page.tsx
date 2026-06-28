@@ -4,33 +4,7 @@ import { getServiceClient } from '@/lib/db/client'
 import { getOrCreateCredits } from '@/lib/db/credits'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import Link from 'next/link'
-
-const STATUS_LABEL: Record<string, string> = {
-  awaiting_initiator: 'Setting up',
-  awaiting_recipient: 'Waiting for other party',
-  ready_for_analysis: 'Processing',
-  analysing: 'Generating report',
-  report_ready: 'Report ready',
-  needs_safety_review: 'Under review',
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  awaiting_initiator: 'bg-outline-variant/40 text-on-surface-variant',
-  awaiting_recipient: 'bg-secondary-container text-on-secondary-container',
-  ready_for_analysis: 'bg-tertiary-container/60 text-on-tertiary-container',
-  analysing: 'bg-tertiary-container/60 text-on-tertiary-container',
-  report_ready: 'bg-primary-container text-on-primary-container',
-  needs_safety_review: 'bg-error-container text-on-error-container',
-}
-
-const STATUS_ICON: Record<string, string> = {
-  awaiting_initiator: 'pending',
-  awaiting_recipient: 'hourglass_empty',
-  ready_for_analysis: 'sync',
-  analysing: 'psychology',
-  report_ready: 'check_circle',
-  needs_safety_review: 'warning',
-}
+import { CaseList } from './CaseList'
 
 export default async function DashboardPage() {
   const user = await getUser()
@@ -52,18 +26,22 @@ export default async function DashboardPage() {
   ])
 
   // Merge initiated + recipient cases, deduplicate by id
-  type CaseRow = { id: string; public_reference: string; topic: string; status: string; initiator_name: string; recipient_name: string; created_at: string }
+  type RawCase = { id: string; public_reference: string; topic: string; status: string; initiator_name: string; recipient_name: string; created_at: string }
+  type CaseRow = RawCase & { userRole: 'initiator' | 'recipient' }
+
+  const initiatedIds = new Set((initiatedResult.data ?? []).map((c) => c.id))
   const seenIds = new Set<string>()
   const allCases: CaseRow[] = []
+
   for (const c of (initiatedResult.data ?? [])) {
     seenIds.add(c.id)
-    allCases.push(c as unknown as CaseRow)
+    allCases.push({ ...(c as unknown as RawCase), userRole: 'initiator' })
   }
   for (const p of (participantResult.data ?? [])) {
-    const c = p.cases as unknown as CaseRow | null
+    const c = p.cases as unknown as RawCase | null
     if (c && !seenIds.has(c.id)) {
       seenIds.add(c.id)
-      allCases.push(c)
+      allCases.push({ ...c, userRole: initiatedIds.has(c.id) ? 'initiator' : 'recipient' })
     }
   }
   allCases.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -73,7 +51,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-surface">
-      <SiteHeader userEmail={user?.email} />
+      <SiteHeader userEmail={user?.email} logoHref="/" />
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -111,40 +89,7 @@ export default async function DashboardPage() {
 
         {/* Cases list */}
         {cases && cases.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {cases.map((c) => {
-              const isReady = ['report_ready', 'needs_safety_review'].includes(c.status)
-              const isActive = ['awaiting_recipient', 'ready_for_analysis', 'analysing'].includes(c.status)
-              const href = isReady
-                ? `/case/${c.public_reference}/report`
-                : isActive
-                  ? `/case/${c.public_reference}/waiting`
-                  : `/case/${c.public_reference}/intake`
-
-              return (
-                <Link
-                  key={c.id}
-                  href={href}
-                  className="bg-white border border-outline-variant/40 rounded-2xl p-5 flex items-start gap-4 hover:border-primary/40 hover:shadow-sm transition-all"
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${STATUS_COLOR[c.status] ?? 'bg-outline-variant/40 text-on-surface-variant'}`}>
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {STATUS_ICON[c.status] ?? 'chat'}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-label-md text-on-surface font-semibold truncate">{c.topic}</p>
-                    <p className="text-label-sm text-on-surface-variant mt-0.5">
-                      With {c.recipient_name} · {new Date(c.created_at as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                  <span className={`text-label-sm px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_COLOR[c.status] ?? ''}`}>
-                    {STATUS_LABEL[c.status] ?? c.status}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
+          <CaseList cases={cases} />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
             <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center">

@@ -32,7 +32,10 @@ export function AuthForm() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: name } },
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
       })
       if (error) { setError(error.message); setLoading(false); return }
       setMessage('Check your email to confirm your account, then sign in.')

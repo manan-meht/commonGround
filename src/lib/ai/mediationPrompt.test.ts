@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SharedReportSchema, SAFETY_CATEGORIES } from './mediationPrompt'
+import { SharedReportSchema, SAFETY_CATEGORIES, buildMediationSystemPrompt } from './mediationPrompt'
 import { MOCK_REPORT } from './mockReport'
 
 describe('SharedReportSchema', () => {
@@ -30,6 +30,49 @@ describe('SharedReportSchema', () => {
     const ok = { ...MOCK_REPORT, professionalSupportSuggestion: null }
     const result = SharedReportSchema.safeParse(ok)
     expect(result.success).toBe(true)
+  })
+})
+
+describe('buildMediationSystemPrompt — Top-Line Summary requirements', () => {
+  const prompt = buildMediationSystemPrompt()
+
+  it('requests a detailed explanation of the central problem', () => {
+    expect(prompt).toMatch(/Central Problem/i)
+    expect(prompt).toMatch(/deeper issue/i)
+  })
+
+  it('requests identification of key unresolved issues', () => {
+    expect(prompt).toMatch(/Key Issues/i)
+    expect(prompt).toMatch(/unresolved/i)
+  })
+
+  it('requests a proposed resolution path for each issue', () => {
+    expect(prompt).toMatch(/How the Issues Should Be Resolved/i)
+    expect(prompt).toMatch(/path forward/i)
+  })
+
+  it('requests participant-specific next actions', () => {
+    expect(prompt).toMatch(/Recommended Next Steps/i)
+    expect(prompt).toMatch(/Participant A/i)
+    expect(prompt).toMatch(/Participant B/i)
+  })
+
+  it('specifies 500 to 900 words as the target length', () => {
+    expect(prompt).toMatch(/500.{1,10}900 words/i)
+  })
+
+  it('prohibits vague recommendations', () => {
+    expect(prompt).toMatch(/communicate better/i)
+    expect(prompt).toMatch(/listen to each other/i)
+  })
+
+  it('requires explanation of why the conflict remains unresolved', () => {
+    expect(prompt).toMatch(/Why the Conflict Remains Unresolved/i)
+  })
+
+  it('requires the bottomLine field to carry the Top-Line Summary', () => {
+    expect(prompt.toLowerCase()).toContain('bottomline')
+    expect(prompt).toMatch(/Top-Line Summary/i)
   })
 })
 

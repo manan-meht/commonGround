@@ -10,7 +10,7 @@ import { prepareTtsInput } from '@/lib/voice'
 function getClient(): OpenAI {
   const { OPENAI_API_KEY } = getEnv()
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.')
-  return new OpenAI({ apiKey: OPENAI_API_KEY, fetch: globalThis.fetch })
+  return new OpenAI({ apiKey: OPENAI_API_KEY })
 }
 
 /**

@@ -9,9 +9,16 @@ interface InviteData {
   initiatorName: string
   recipientName: string
   caseReference: string
+  invitationBrief?: {
+    title: string
+    reasonForConversation: string
+    issueFromPartyAPerspective: string
+    hopedForOutcome: string
+    invitationToRespond: string
+  } | null
 }
 
-export function InvitationView({ token }: { token: string }) {
+export function InvitationView({ token, userEmail }: { token: string; userEmail: string | null }) {
   const router = useRouter()
   const [inviteData, setInviteData] = useState<InviteData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -22,7 +29,9 @@ export function InvitationView({ token }: { token: string }) {
     fetch(`/api/invitations/${token}`)
       .then(async (res) => {
         const data = await res.json() as InviteData & { error?: string }
-        if (!res.ok) {
+        if (res.status === 423) {
+          setError('This invitation is not yet ready. The person who invited you is still preparing it. Please try again in a few minutes.')
+        } else if (!res.ok) {
           setError(data.error ?? 'This invitation is not available.')
         } else {
           setInviteData(data)
@@ -58,7 +67,7 @@ export function InvitationView({ token }: { token: string }) {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <SiteHeader />
+        <SiteHeader userEmail={userEmail} />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-on-surface-variant">Loading invitation…</div>
         </main>
@@ -69,7 +78,7 @@ export function InvitationView({ token }: { token: string }) {
   if (error) {
     return (
       <div className="flex flex-col min-h-screen">
-        <SiteHeader />
+        <SiteHeader userEmail={userEmail} />
         <main className="flex-grow flex items-center justify-center px-margin-mobile">
           <div className="max-w-md text-center">
             <span className="material-symbols-outlined text-error text-5xl mb-4">error</span>
@@ -84,7 +93,7 @@ export function InvitationView({ token }: { token: string }) {
 
   if (!inviteData) return null
 
-  const { initiatorName, topic } = inviteData
+  const { initiatorName, topic, invitationBrief } = inviteData
 
   const reassurances = [
     `Joining does not mean you agree with ${initiatorName}.`,
@@ -95,7 +104,7 @@ export function InvitationView({ token }: { token: string }) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+      <SiteHeader userEmail={userEmail} />
       <main className="flex-grow">
 
         {/* Hero */}
@@ -117,6 +126,34 @@ export function InvitationView({ token }: { token: string }) {
             <p className="font-headline-md text-headline-md text-on-surface">{topic}</p>
           </div>
         </section>
+
+        {/* Invitation Brief */}
+        {invitationBrief && (
+          <section className="px-margin-mobile pb-stack-md">
+            <div className="max-w-md mx-auto bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+              <div className="bg-secondary-container/20 px-5 py-3 border-b border-outline-variant">
+                <p className="font-label-sm text-on-surface font-semibold">{invitationBrief.title}</p>
+              </div>
+              <div className="p-5 flex flex-col gap-4">
+                <div>
+                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">Why this conversation was started</p>
+                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.reasonForConversation}</p>
+                </div>
+                <div>
+                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">The issue as {initiatorName} currently understands it</p>
+                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.issueFromPartyAPerspective}</p>
+                </div>
+                <div>
+                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">What {initiatorName} hopes to achieve</p>
+                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.hopedForOutcome}</p>
+                </div>
+                <div className="bg-primary-container/10 rounded-xl p-4">
+                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.invitationToRespond}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* What Urushi does */}
         <section className="px-margin-mobile pb-stack-md">

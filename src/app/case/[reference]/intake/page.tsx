@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth/session'
 import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
 import { IntakeChat } from './IntakeChat'
+import { buildPartyBOpeningMessage } from '@/lib/ai/invitationBrief'
+import type { InvitationBrief } from '@/lib/db/types'
 
 export const metadata: Metadata = {
   title: 'Private Intake — Urushi Labs',
@@ -25,7 +27,7 @@ export default async function IntakePage({ params }: PageProps) {
   const db = getServiceClient()
   const { data: caseRow } = await db
     .from('cases')
-    .select('topic, initiator_name, recipient_name')
+    .select('topic, initiator_name, recipient_name, invitation_brief, invitation_brief_approved_at')
     .eq('id', session.caseId)
     .single()
 
@@ -47,6 +49,17 @@ export default async function IntakePage({ params }: PageProps) {
     redirect(`/case/${reference}/waiting`)
   }
 
+  // Build context-aware opening for Party B if a brief exists
+  let openingMessage: string | undefined
+  if (session.role === 'recipient' && caseRow.invitation_brief) {
+    try {
+      const brief = JSON.parse(caseRow.invitation_brief) as InvitationBrief
+      openingMessage = buildPartyBOpeningMessage(brief, participantName)
+    } catch {
+      // Fall back to generic opening if parse fails
+    }
+  }
+
   return (
     <IntakeChat
       caseReference={reference}
@@ -56,6 +69,7 @@ export default async function IntakePage({ params }: PageProps) {
       otherPartyName={otherPartyName}
       role={session.role}
       isLoggedIn={!!supabaseUser}
+      openingMessage={openingMessage}
     />
   )
 }

@@ -28,7 +28,7 @@ export default async function StartPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader exitHref="/" userEmail={user.email} />
+      <SiteHeader exitHref="/" userEmail={user.email} logoHref="/" />
       <main className="flex-grow">
         <div className="px-margin-mobile pt-stack-md pb-stack-sm md:max-w-xl mx-auto">
           <h1 className="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-2 text-center">
@@ -59,9 +59,15 @@ export default async function StartPage() {
               >
                 View plans
               </Link>
-              <Link href="/dashboard" className="text-label-sm text-on-surface-variant">
-                Back to my cases
-              </Link>
+              <div className="flex items-center justify-center gap-4">
+                <Link href="/dashboard" className="text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">
+                  Back to my cases
+                </Link>
+                <span className="text-outline-variant">·</span>
+                <Link href="/" className="text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">
+                  Back to home
+                </Link>
+              </div>
             </div>
           </div>
         )}
