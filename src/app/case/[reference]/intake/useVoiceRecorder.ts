@@ -49,15 +49,6 @@ function classifyError(err: unknown): MicError {
   return 'unavailable'
 }
 
-/** Check Permissions API without depending on it — not universally supported. */
-async function queryMicPermission(): Promise<PermissionState | null> {
-  try {
-    const result = await navigator.permissions.query({ name: 'microphone' as PermissionName })
-    return result.state
-  } catch {
-    return null
-  }
-}
 
 export function useVoiceRecorder(): VoiceRecorder {
   const [state, setState] = useState<RecorderState>('idle')
@@ -180,18 +171,11 @@ export function useVoiceRecorder(): VoiceRecorder {
     setState('requesting')
 
     try {
-      // Use Permissions API to detect permanent denial without triggering getUserMedia.
-      // Do not depend on it — falls through to getUserMedia when unavailable.
-      const permState = await queryMicPermission()
-      if (permState === 'denied') {
-        setError('permission-denied')
-        setState('error')
-        requestingRef.current = false
-        return
-      }
-
       // getUserMedia is the authoritative permission request.
-      // Must be called directly in the user-gesture chain (click handler → start()).
+      // Calling it directly inside the click handler triggers the browser's
+      // native Allow/Block prompt. The Permissions API is NOT used as a
+      // pre-check because it can return 'denied' on some browsers even when
+      // the user hasn't been asked yet, preventing the prompt from appearing.
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
