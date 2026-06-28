@@ -137,9 +137,16 @@ export function useVoiceRecorder(): VoiceRecorder {
           return next
         })
       }, 1000)
-    } catch {
+    } catch (err) {
       stopTracks()
-      setError('Microphone access was denied or unavailable.')
+      const name = (err as { name?: string }).name
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setError('permission-denied')
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setError('no-device')
+      } else {
+        setError('unavailable')
+      }
       setState('error')
     }
   }, [supported, stopTracks, revokeUrl, clearTimer])
