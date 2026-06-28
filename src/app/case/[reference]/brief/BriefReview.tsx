@@ -62,6 +62,7 @@ export function BriefReview({
   const [brief, setBrief] = useState<InvitationBrief | null>(initialBrief)
   const [approvedAt, setApprovedAt] = useState<string | null>(initialApprovedAt)
   const [loading, setLoading] = useState(!initialBrief && !initialApprovedAt)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false)
   const [approving, setApproving] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [error, setError] = useState('')
@@ -88,9 +89,10 @@ export function BriefReview({
 
   useEffect(() => {
     if (!loading) return
-    const id = setInterval(() => void pollForBrief(), 3000)
+    const pollId = setInterval(() => void pollForBrief(), 3000)
+    const timeoutId = setTimeout(() => setLoadingTimedOut(true), 30000)
     void pollForBrief()
-    return () => clearInterval(id)
+    return () => { clearInterval(pollId); clearTimeout(timeoutId) }
   }, [loading, pollForBrief])
 
   async function handleRegenerate() {
@@ -155,16 +157,36 @@ export function BriefReview({
   if (loading) {
     return (
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 gap-6">
-        <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center">
-          <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        </div>
-        <div className="text-center">
-          <h2 className="font-headline-sm text-on-surface mb-2">Preparing the invitation for {recipientName}…</h2>
-          <p className="text-on-surface-variant font-body-md">Urushi Labs is drafting a neutral summary of your conversation. This takes about 15 seconds.</p>
-        </div>
+        {!loadingTimedOut ? (
+          <>
+            <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center">
+              <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <h2 className="font-headline-sm text-on-surface mb-2">Preparing the invitation for {recipientName}…</h2>
+              <p className="text-on-surface-variant font-body-md">Urushi Labs is drafting a neutral summary of your conversation. This takes about 15 seconds.</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <span className="material-symbols-outlined text-outline text-5xl">hourglass_disabled</span>
+            <div className="text-center">
+              <h2 className="font-headline-sm text-on-surface mb-2">Taking longer than expected</h2>
+              <p className="text-on-surface-variant font-body-md mb-4">The draft didn't arrive in time. Tap below to generate it now.</p>
+              <button
+                onClick={() => void handleRegenerate()}
+                disabled={regenerating}
+                className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md font-bold hover:bg-on-primary-fixed-variant transition-all active:scale-95 disabled:opacity-60"
+              >
+                {regenerating ? 'Generating…' : 'Generate invitation'}
+              </button>
+              {error && <p className="text-error text-label-sm mt-3">{error}</p>}
+            </div>
+          </>
+        )}
       </main>
     )
   }

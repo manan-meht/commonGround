@@ -4,7 +4,6 @@
  */
 
 import { z } from 'zod'
-import OpenAI from 'openai'
 import { getEnv } from '@/lib/env'
 import type { InvitationBrief } from '@/lib/db/types'
 
@@ -73,14 +72,8 @@ ${ctx.initiatorSummaryJson}
 Generate the Invitation Brief for ${ctx.recipientName} following the rules above. Remember to attribute all claims to ${ctx.initiatorName}'s perspective — never as established fact.`
 }
 
-function getClient(): OpenAI {
-  const { OPENAI_API_KEY } = getEnv()
-  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.')
-  return new OpenAI({ apiKey: OPENAI_API_KEY })
-}
-
 export async function generateInvitationBrief(ctx: BriefGenerationContext): Promise<InvitationBrief> {
-  const { OPENAI_MODEL, DEMO_MODE } = getEnv()
+  const { OPENAI_API_KEY, OPENAI_MODEL, DEMO_MODE } = getEnv()
 
   if (DEMO_MODE) {
     return {
@@ -92,20 +85,35 @@ export async function generateInvitationBrief(ctx: BriefGenerationContext): Prom
     }
   }
 
-  const client = getClient()
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.')
 
-  const response = await client.chat.completions.create({
-    model: OPENAI_MODEL,
-    messages: [
-      { role: 'system', content: buildBriefSystemPrompt(ctx) },
-      { role: 'user', content: buildBriefUserMessage(ctx) },
-    ],
-    response_format: { type: 'json_object' },
-    max_tokens: 600,
-    temperature: 0.3,
+  // Use fetch directly rather than the OpenAI SDK to avoid the Node.js HTTP
+  // internals that hang silently in the Cloudflare Workers runtime.
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      messages: [
+        { role: 'system', content: buildBriefSystemPrompt(ctx) },
+        { role: 'user', content: buildBriefUserMessage(ctx) },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 600,
+      temperature: 0.3,
+    }),
   })
 
-  const raw = response.choices[0]?.message?.content
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`OpenAI brief generation failed (${res.status}): ${text}`)
+  }
+
+  const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
+  const raw = data.choices?.[0]?.message?.content
   if (!raw) throw new Error('Empty response from OpenAI.')
 
   const parsed = InvitationBriefSchema.safeParse(JSON.parse(raw))
