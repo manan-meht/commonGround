@@ -362,7 +362,7 @@ export function SessionView({
               <span className="material-symbols-outlined text-white text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>chat</span>
             </div>
             <p className="font-body-md text-on-surface-variant">
-              <strong>{personAName}</strong> goes first. Share what's on your mind.
+              <strong>{personAName}</strong> goes first. Share what&apos;s on your mind.
             </p>
           </div>
         )}

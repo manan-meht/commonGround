@@ -65,7 +65,7 @@ export async function POST(
   // person_b approved → check if both want to continue or move to sharing_confirmation
   let nextStage: string
   let nextSpeaker: string | null = null
-  let nextRound = session.round_number
+  const nextRound = session.round_number
 
   if (session.stage === 'person_a_summary_review') {
     // Person A reviewed → show Person B their summary on same device
