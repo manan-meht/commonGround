@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
-import { StartConversationForm } from './StartConversationForm'
+import { ModeSelector } from './ModeSelector'
 import { getUser } from '@/lib/supabase/server'
 import { getOrCreateCredits } from '@/lib/db/credits'
 import { extractFirstName } from '@/lib/invitation'
@@ -35,12 +35,12 @@ export default async function StartPage() {
             Start a conversation
           </h1>
           <p className="text-on-surface-variant font-body-md text-center">
-            You&apos;ll first share your perspective privately. Nothing will be sent to the other person until you choose to invite them.
+            Choose how you&apos;d like to have this conversation.
           </p>
         </div>
 
         {hasCredits ? (
-          <StartConversationForm
+          <ModeSelector
             userFirstName={firstName}
             userEmail={userEmail}
             roomsRemaining={credits.rooms_available}

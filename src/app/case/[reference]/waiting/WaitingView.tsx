@@ -147,12 +147,17 @@ export function WaitingView({
             </p>
 
             {/* Generated message preview */}
-            <div>
-              <p className="font-label-sm text-outline uppercase tracking-widest mb-2">Invitation message</p>
-              <div className="bg-surface-container-low rounded-lg p-4 text-label-md text-on-surface-variant leading-relaxed whitespace-pre-wrap font-mono text-[13px] max-h-48 overflow-y-auto border border-outline-variant/30">
-                {invitationMessage}
-              </div>
+            <div className="flex flex-col gap-3">
+              <p className="font-label-sm text-outline uppercase tracking-widest">Invitation message</p>
+              {invitationMessage.split('\n\n').map((para, i) => (
+                <p key={i} className="font-body-md text-on-surface text-sm leading-relaxed">{para}</p>
+              ))}
             </div>
+
+            <p className="text-label-sm text-on-surface-variant flex items-start gap-1.5">
+              <span className="material-symbols-outlined text-[16px] text-secondary shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
+              Copy the message first, then share via WhatsApp or Gmail.
+            </p>
 
             {/* Copy error fallback */}
             {copyState === 'error' && (

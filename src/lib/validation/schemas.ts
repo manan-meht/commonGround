@@ -74,6 +74,65 @@ export const AgreementResponseSchema = z.object({
 
 export type AgreementResponseInput = z.infer<typeof AgreementResponseSchema>
 
+// ─── Together Mode ────────────────────────────────────────────────────────────
+export const CreateTogetherSessionSchema = z.object({
+  personAName: z.string().trim().min(1, 'Person A name is required.').max(80),
+  personBName: z.string().trim().min(1, 'Person B name is required.').max(80),
+  topic: z
+    .string()
+    .trim()
+    .min(5, 'Please describe the topic in at least 5 characters.')
+    .max(120, 'Topic must be 120 characters or fewer.'),
+  relationship: z.enum(RELATIONSHIP_OPTIONS).optional(),
+  deviceMode: z.enum(['shared', 'separate']).default('shared'),
+})
+export type CreateTogetherSessionInput = z.infer<typeof CreateTogetherSessionSchema>
+
+export const TogetherConsentSchema = z.object({
+  confirmedSafety: z.literal(true, {
+    errorMap: () => ({ message: 'All participants must feel safe to continue.' }),
+  }),
+})
+export type TogetherConsentInput = z.infer<typeof TogetherConsentSchema>
+
+export const TogetherMessageSchema = z.object({
+  content: z.string().min(1).max(4000, 'Message is too long.'),
+  speaker: z.enum(['person_a', 'person_b']),
+  replyToId: z.string().uuid().optional(),
+  useReframe: z.boolean().optional(),
+})
+export type TogetherMessageInput = z.infer<typeof TogetherMessageSchema>
+
+export const TogetherSummaryApprovalSchema = z.object({
+  approvedSummary: z.string().min(1).max(4000),
+})
+export type TogetherSummaryApprovalInput = z.infer<typeof TogetherSummaryApprovalSchema>
+
+export const TogetherReadinessSchema = z.object({
+  speaker: z.enum(['person_a', 'person_b']),
+})
+export type TogetherReadinessInput = z.infer<typeof TogetherReadinessSchema>
+
+export const TogetherIssueUpdateSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  status: z.enum(['pending', 'discussing', 'agreed', 'partial', 'unresolved', 'skipped']).optional(),
+  resolution: z.string().max(2000).optional(),
+})
+export type TogetherIssueUpdateInput = z.infer<typeof TogetherIssueUpdateSchema>
+
+export const TogetherOptionSchema = z.object({
+  proposedBy: z.enum(['person_a', 'person_b', 'urushi']),
+  description: z.string().min(1).max(2000),
+})
+export type TogetherOptionInput = z.infer<typeof TogetherOptionSchema>
+
+export const TogetherOptionResponseSchema = z.object({
+  speaker: z.enum(['person_a', 'person_b']),
+  response: z.enum(['accept', 'accept_with_changes', 'reject', 'need_info']),
+  note: z.string().max(1000).optional(),
+})
+export type TogetherOptionResponseInput = z.infer<typeof TogetherOptionResponseSchema>
+
 // ─── Feedback ─────────────────────────────────────────────────────────────────
 export const ReportFeedbackSchema = z.object({
   representationRating: z.enum(['accurately', 'partly', 'not']),

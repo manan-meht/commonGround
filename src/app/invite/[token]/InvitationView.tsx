@@ -130,26 +130,31 @@ export function InvitationView({ token, userEmail }: { token: string; userEmail:
         {/* Invitation Brief */}
         {invitationBrief && (
           <section className="px-margin-mobile pb-stack-md">
-            <div className="max-w-md mx-auto bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-              <div className="bg-secondary-container/20 px-5 py-3 border-b border-outline-variant">
-                <p className="font-label-sm text-on-surface font-semibold">{invitationBrief.title}</p>
-              </div>
-              <div className="p-5 flex flex-col gap-4">
-                <div>
-                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">Why this conversation was started</p>
-                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.reasonForConversation}</p>
-                </div>
-                <div>
-                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">The issue as {initiatorName} currently understands it</p>
-                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.issueFromPartyAPerspective}</p>
-                </div>
-                <div>
-                  <p className="font-label-sm text-outline uppercase tracking-widest text-[11px] mb-1.5">What {initiatorName} hopes to achieve</p>
-                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.hopedForOutcome}</p>
-                </div>
-                <div className="bg-primary-container/10 rounded-xl p-4">
-                  <p className="font-body-md text-on-surface-variant leading-relaxed">{invitationBrief.invitationToRespond}</p>
-                </div>
+            <div className="max-w-md mx-auto flex flex-col gap-5">
+              <p className="font-label-sm text-outline uppercase tracking-widest text-[11px]">
+                What this conversation is about
+              </p>
+
+              <p className="font-headline-sm text-on-surface leading-snug">
+                {invitationBrief.title}
+              </p>
+
+              <p className="font-body-md text-on-surface-variant leading-relaxed">
+                {invitationBrief.reasonForConversation}
+              </p>
+
+              <p className="font-body-md text-on-surface-variant leading-relaxed">
+                {invitationBrief.issueFromPartyAPerspective}
+              </p>
+
+              <p className="font-body-md text-on-surface-variant leading-relaxed">
+                {invitationBrief.hopedForOutcome}
+              </p>
+
+              <div className="border-l-4 border-primary/40 pl-4">
+                <p className="font-body-md text-on-surface leading-relaxed">
+                  {invitationBrief.invitationToRespond}
+                </p>
               </div>
             </div>
           </section>
