@@ -20,14 +20,26 @@ export default async function SessionPage({
   const { reference } = await params
   const db = getServiceClient()
 
-  // Determine identity: Supabase auth (Person A/owner) OR participant cookie (Person B)
-  const user = await getUser()
-  const participantSession = await getParticipantSession()
+  // Participant cookie takes priority — Person B joining via QR on any device
+  const [user, participantSession] = await Promise.all([getUser(), getParticipantSession()])
 
   let caseRow: { id: string; user_id: string; conversation_mode: string } | null = null
   let viewerSpeaker: 'person_a' | 'person_b' = 'person_a'
 
-  if (user) {
+  if (participantSession && participantSession.caseReference === reference) {
+    const { data } = await db
+      .from('cases')
+      .select('id, user_id, conversation_mode')
+      .eq('id', participantSession.caseId)
+      .single()
+
+    if (data) {
+      caseRow = data
+      viewerSpeaker = 'person_b'
+    }
+  }
+
+  if (!caseRow && user) {
     const { data } = await db
       .from('cases')
       .select('id, user_id, conversation_mode')
@@ -38,19 +50,6 @@ export default async function SessionPage({
     if (data && data.user_id === user.id) {
       caseRow = data
       viewerSpeaker = 'person_a'
-    }
-  }
-
-  if (!caseRow && participantSession && participantSession.caseReference === reference) {
-    const { data } = await db
-      .from('cases')
-      .select('id, user_id, conversation_mode')
-      .eq('id', participantSession.caseId)
-      .single()
-
-    if (data) {
-      caseRow = data
-      viewerSpeaker = 'person_b'
     }
   }
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase/server'
 import { getServiceClient } from '@/lib/db/client'
+import { getParticipantSession } from '@/lib/auth/togetherParticipantSession'
 import { SiteHeader, SiteFooter } from '@/components/SiteHeader'
 import { ConsentChecklist } from './ConsentChecklist'
 
@@ -16,6 +17,12 @@ export default async function ConsentPage({
   params: Promise<{ reference: string }>
 }) {
   const { reference } = await params
+
+  // Person B joins via QR — they skip consent (Person A confirmed for both)
+  const participantSession = await getParticipantSession()
+  if (participantSession && participantSession.caseReference === reference) {
+    redirect(`/together/${reference}/session`)
+  }
 
   const user = await getUser()
   if (!user) redirect(`/auth?next=/together/${reference}/consent`)
